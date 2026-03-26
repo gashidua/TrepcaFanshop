@@ -1,5 +1,4 @@
-using System;               
-using TrepcaFanshopApp.Models;     
+using System;
 
 namespace TrepcaFanshopApp.Services
 {

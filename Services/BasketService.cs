@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using TrepcaFanshopApp.Data;
+﻿using TrepcaFanshopApp.Data;
 using TrepcaFanshopApp.Models;
 
 namespace TrepcaFanshopApp.Services
