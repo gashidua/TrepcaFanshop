@@ -7,15 +7,9 @@ namespace TrepcaFanshopApp.Models
         public int Id { get; set; }
         public List<Product> Products { get; set; } = new List<Product>();
 
-        public void AddProduct(Product product)
-        {
-            Products.Add(product);
-        }
+        public void AddProduct(Product product) => Products.Add(product);
 
-        public void RemoveProduct(Product product)
-        {
-            Products.Remove(product);
-        }
+        public void RemoveProduct(Product product) => Products.Remove(product);
 
         public double CalculateTotal()
         {

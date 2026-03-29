@@ -11,7 +11,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="UI\" />
+    <Folder Include="DataFiles\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="trepcafanshopapp\TrepcaFanshopApp.csproj" />
   </ItemGroup>
 
 </Project>
