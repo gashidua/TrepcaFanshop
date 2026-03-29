@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using TrepcaFanshopApp.Data;
 using TrepcaFanshopApp.Models;
 
@@ -13,15 +15,25 @@ namespace TrepcaFanshopApp.Services
             _repo = repo;
         }
 
-        public List<Product> List(string? type = null)
+        // Merr të gjitha produktet, opsionalisht filtron sipas kategori
+        public List<Product> GetAll(string? category = null)
         {
             var products = _repo.GetAll();
-            if (!string.IsNullOrEmpty(type))
-                products = products.Where(p => p.Type.Equals(type, StringComparison.OrdinalIgnoreCase)).ToList();
+
+            if (!string.IsNullOrWhiteSpace(category))
+            {
+                products = products
+                    .Where(p => p.Category.Equals(category, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+
             return products;
         }
 
-        public Product? GetById(int id) => _repo.GetById(id);
+        public Product? GetById(int id)
+        {
+            return _repo.GetById(id);
+        }
 
         public void Add(Product product)
         {
@@ -34,11 +46,30 @@ namespace TrepcaFanshopApp.Services
             _repo.Add(product);
         }
 
-        public void Update(Product product) => _repo.Update(product);
+        public void Update(Product updatedProduct)
+        {
+            var existing = _repo.GetById(updatedProduct.Id);
+            if (existing == null) throw new Exception("Produkt nuk ekziston");
 
-        public void Delete(int id) => _repo.Delete(id);
+            existing.Name = updatedProduct.Name;
+            existing.Price = updatedProduct.Price;
+            existing.Type = updatedProduct.Type;
+            existing.Category = updatedProduct.Category;
+            existing.Size = updatedProduct.Size;
+            existing.Stock = updatedProduct.Stock;
 
-        internal IEnumerable<object> GetAll()
+            _repo.Update(existing);
+        }
+
+        public void Delete(int id)
+        {
+            var product = _repo.GetById(id);
+            if (product == null) throw new Exception("Produkt nuk ekziston");
+
+            _repo.Delete(id);
+        }
+
+        internal object List(string? type)
         {
             throw new NotImplementedException();
         }

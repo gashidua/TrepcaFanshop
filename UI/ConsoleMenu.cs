@@ -47,15 +47,18 @@ namespace TrepcaFanshopApp.UI
             }
         }
 
-        private void ListAll()
+        private void ListAll(string? categoryFilter = null)
         {
-            var products = _productService.List(); // ✅ FIX
-            Console.WriteLine("\nProdukte:");
+            var products = _productService.GetAll(categoryFilter);
 
+            Console.WriteLine("\nProdukte:");
             foreach (var p in products)
             {
-                Console.WriteLine($"Id: {p.Id}, Name: {p.Name}, Type: {p.Type}, Price: {p.Price}");
+                Console.WriteLine($"Id: {p.Id}, Name: {p.Name}, Type: {p.Type}, Price: {p.Price}, Category: {p.Category}");
             }
+
+            if (products.Count == 0)
+                Console.WriteLine("Nuk u gjet asnjë produkt për këtë kategori.");
         }
 
         private void AddProduct()
@@ -78,7 +81,8 @@ namespace TrepcaFanshopApp.UI
                 return;
             }
 
-            var products = _productService.List();
+            // Merr të gjitha produktet për të krijuar ID të re
+            var products = _productService.GetAll();
             int newId = products.Count > 0 ? products.Max(p => p.Id) + 1 : 1;
 
             var product = new Product
@@ -88,7 +92,8 @@ namespace TrepcaFanshopApp.UI
                 Type = type,
                 Price = (double)price,
                 Size = "M",
-                Stock = 10
+                Stock = 10,
+                Category = "Merchandise"
             };
 
             _productService.Add(product);
@@ -114,7 +119,7 @@ namespace TrepcaFanshopApp.UI
             }
             else
             {
-                Console.WriteLine($"Id: {product.Id}, Name: {product.Name}, Type: {product.Type}, Price: {product.Price}");
+                Console.WriteLine($"Id: {product.Id}, Name: {product.Name}, Type: {product.Type}, Price: {product.Price}, Category: {product.Category}");
             }
         }
     }

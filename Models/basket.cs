@@ -1,24 +1,39 @@
 using System.Collections.Generic;
-using TrepcaFanshopApp.Models;
+using System.Linq;
 
 namespace TrepcaFanshopApp.Models
 {
     public class Basket
     {
-        public int Id { get; set; }
-<<<<<<< HEAD
-        public List<Product> Products { get; set; } = new();
-=======
-        public List<Product> Products { get; set; } = new List<Product>();
+        // Lista e artikujve të shportës
+        public List<BasketItem> Items { get; set; } = new List<BasketItem>();
 
-        public void AddProduct(Product product) => Products.Add(product);
-
-        public void RemoveProduct(Product product) => Products.Remove(product);
->>>>>>> fix-project
-
-        public double CalculateTotal()
+        // Shto artikull në shportë
+        public void AddItem(BasketItem item)
         {
-            return Products.Sum(p => p.Price);
+            var existing = Items.FirstOrDefault(x => x.ProductId == item.ProductId);
+            if (existing != null)
+            {
+                existing.Quantity += item.Quantity;
+            }
+            else
+            {
+                Items.Add(item);
+            }
+        }
+
+        // Fshi artikull nga shporta
+        public void RemoveItem(int productId)
+        {
+            var existing = Items.FirstOrDefault(x => x.ProductId == productId);
+            if (existing != null)
+                Items.Remove(existing);
+        }
+
+        // Llogarit total të shportës
+        public double GetTotal()
+        {
+            return Items.Sum(x => x.Price * x.Quantity);
         }
     }
 }

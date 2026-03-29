@@ -1,15 +1,11 @@
-<<<<<<< HEAD
-﻿using TrepcaFanshopApp.Data;
-=======
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
->>>>>>> fix-project
 using TrepcaFanshopApp.Models;
 
 namespace TrepcaFanshopApp.Services
 {
-    public class BasketService : BasketServiceBase
+    public class BasketService
     {
         private readonly List<BasketItem> _items = new List<BasketItem>();
         private readonly ProductService _productService;
@@ -18,6 +14,9 @@ namespace TrepcaFanshopApp.Services
         {
             _productService = productService;
         }
+
+        // Liston të gjitha artikujt e shportës
+        public List<BasketItem> List() => _items;
 
         // Shto produkt në shportë
         public void Add(int productId, int quantity)
@@ -61,7 +60,5 @@ namespace TrepcaFanshopApp.Services
 
         // Llogarit total të shportës
         public decimal GetTotal() => (decimal)_items.Sum(x => x.Price * x.Quantity);
-
-        internal object? List() => throw new NotImplementedException();
     }
 }

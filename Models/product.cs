@@ -4,25 +4,11 @@ namespace TrepcaFanshopApp.Models
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
+        public string Type { get; set; } = "";       // Fanella, Bileta, Aksesore
+        public string Size { get; set; } = "M";      // S, M, L ose N/A për bileta
         public double Price { get; set; }
-<<<<<<< HEAD
-=======
-        public string Category { get; set; } = string.Empty;
-        public string Type { get; internal set; }
-        public string Size { get; internal set; }
-        public int Stock { get; internal set; }
+        public int Stock { get; set; } = 10;
+        public string Category { get; set; } = "Merchandise";
 
-        public Product() { }
-
-        public class product
-        {
-            public int Id { get; set; }
-            public string Name { get; set; }        // p.sh Fanella Home
-            public string Type { get; set; }        // Fanella, Bileta, Aksesore
-            public double Price { get; set; }
-            public string Size { get; set; }        // S, M, L (ose N/A per bileta)
-            public int Stock { get; set; }
-        }
->>>>>>> fix-project
     }
 }

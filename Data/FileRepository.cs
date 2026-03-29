@@ -37,26 +37,28 @@ namespace TrepcaFanshopApp.Data
         public T? GetById(int id)
         {
             LoadFromFile();
-<<<<<<< HEAD
-            return items.FirstOrDefault(x => ((dynamic)x).Id == id);
-=======
-
             var idProp = typeof(T).GetProperty("Id");
+            if (idProp == null) return null;
 
-            var obj = items.FirstOrDefault(x =>
-                (int)idProp.GetValue(x) == id);
-
-            return obj;
+            return items.FirstOrDefault(x =>
+            {
+                var val = idProp.GetValue(x);
+                return val != null && Convert.ToInt32(val) == id;
+            });
         }
 
-        public virtual void Update(T updatedItem)
+        public void Update(T updatedItem)
         {
             LoadFromFile();
-
             var idProp = typeof(T).GetProperty("Id");
+            if (idProp == null) return;
 
             var existing = items.FirstOrDefault(x =>
-                (int)idProp.GetValue(x) == (int)idProp.GetValue(updatedItem));
+            {
+                var val1 = idProp.GetValue(x);
+                var val2 = idProp.GetValue(updatedItem);
+                return val1 != null && val2 != null && Convert.ToInt32(val1) == Convert.ToInt32(val2);
+            });
 
             if (existing != null)
             {
@@ -66,47 +68,36 @@ namespace TrepcaFanshopApp.Data
             }
         }
 
-        public virtual void Delete(int id)
+        public void Delete(int id)
         {
             LoadFromFile();
-
             var idProp = typeof(T).GetProperty("Id");
+            if (idProp == null) return;
 
             var item = items.FirstOrDefault(x =>
-                (int)idProp.GetValue(x) == id);
+            {
+                var val = idProp.GetValue(x);
+                return val != null && Convert.ToInt32(val) == id;
+            });
 
             if (item != null)
             {
                 items.Remove(item);
                 Save();
             }
->>>>>>> fix-project
         }
 
         public void Save()
         {
-            using var writer = new StreamWriter(filePath);
+            var props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
-            var props = typeof(T).GetProperties();
+            using var writer = new StreamWriter(filePath);
             writer.WriteLine(string.Join(",", props.Select(p => p.Name)));
 
             foreach (var item in items)
             {
-<<<<<<< HEAD
                 var values = props.Select(p => p.GetValue(item)?.ToString() ?? "");
                 writer.WriteLine(string.Join(",", values));
-=======
-                var props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
-                // Header
-                writer.WriteLine(string.Join(",", props.Select(p => p.Name)));
-
-                foreach (var item in items)
-                {
-                    var values = props.Select(p => p.GetValue(item)?.ToString() ?? "");
-                    writer.WriteLine(string.Join(",", values));
-                }
->>>>>>> fix-project
             }
         }
 
@@ -116,13 +107,7 @@ namespace TrepcaFanshopApp.Data
 
             items.Clear();
             var lines = File.ReadAllLines(filePath);
-<<<<<<< HEAD
             if (lines.Length < 2) return;
-=======
-
-            if (lines.Length < 2)
-                return;
->>>>>>> fix-project
 
             var headers = lines[0].Split(',');
             var props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
@@ -130,12 +115,7 @@ namespace TrepcaFanshopApp.Data
             for (int i = 1; i < lines.Length; i++)
             {
                 var values = lines[i].Split(',');
-
                 var obj = new T();
-<<<<<<< HEAD
-                var props = typeof(T).GetProperties();
-=======
->>>>>>> fix-project
 
                 for (int j = 0; j < headers.Length; j++)
                 {
@@ -143,7 +123,8 @@ namespace TrepcaFanshopApp.Data
                     if (prop == null) continue;
 
                     var val = Convert.ChangeType(values[j], prop.PropertyType);
-                    prop.SetValue(obj, val);
+                    if (val != null)
+                        prop.SetValue(obj, val);
                 }
 
                 items.Add(obj);

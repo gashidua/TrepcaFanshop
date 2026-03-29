@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TrepcaFanshopApp.Models;
 using TrepcaFanshopApp.Services;
+using System;
+using System.Collections.Generic;
 
 namespace TrepcaFanshopApp.Controllers
 {
@@ -10,46 +12,22 @@ namespace TrepcaFanshopApp.Controllers
     {
         private readonly BasketService _service;
 
-<<<<<<< HEAD
-        public BasketsController(BasketService service)
-=======
         public BasketController(BasketService service)
->>>>>>> fix-project
         {
             _service = service;
         }
 
         // GET: api/basket
         [HttpGet]
-<<<<<<< HEAD
-        public ActionResult<List<Basket>> GetAll()
+        public IActionResult GetAll()
         {
-            return Ok(_service.GetAll());
+            var items = _service.List();
+            return Ok(items);
         }
-
-        [HttpGet("{id}")]
-        public ActionResult<Basket> GetById(int id)
-        {
-            var basket = _service.GetById(id);
-
-            if (basket == null)
-                return NotFound();
-
-            return Ok(basket);
-        }
-
-        [HttpPost]
-        public ActionResult<Basket> Add([FromBody] Basket basket)
-        {
-            _service.Add(basket);
-
-            return CreatedAtAction(nameof(GetById), new { id = basket.Id }, basket);
-=======
-        public IActionResult GetAll() => Ok(_service.List());
 
         // POST: api/basket/add
         [HttpPost("add")]
-        public IActionResult Add([FromBody] Models.BasketItem item)
+        public IActionResult Add([FromBody] BasketItem item)
         {
             try
             {
@@ -68,11 +46,14 @@ namespace TrepcaFanshopApp.Controllers
         {
             _service.Remove(productId);
             return Ok(_service.List());
->>>>>>> fix-project
         }
 
         // GET: api/basket/total
         [HttpGet("total")]
-        public IActionResult Total() => Ok(_service.GetTotal());
+        public IActionResult Total()
+        {
+            var total = _service.GetTotal();
+            return Ok(total);
+        }
     }
 }
