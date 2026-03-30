@@ -30,11 +30,13 @@ namespace TrepcaFanshopApp.Services
             return products;
         }
 
+        // Merr produkt sipas Id
         public Product? GetById(int id)
         {
             return _repo.GetById(id);
         }
 
+        // Shto produkt me validim
         public void Add(Product product)
         {
             if (string.IsNullOrWhiteSpace(product.Name))
@@ -46,6 +48,7 @@ namespace TrepcaFanshopApp.Services
             _repo.Add(product);
         }
 
+        // Update produkt
         public void Update(Product updatedProduct)
         {
             var existing = _repo.GetById(updatedProduct.Id);
@@ -61,6 +64,7 @@ namespace TrepcaFanshopApp.Services
             _repo.Update(existing);
         }
 
+        // Delete produkt
         public void Delete(int id)
         {
             var product = _repo.GetById(id);
@@ -69,9 +73,19 @@ namespace TrepcaFanshopApp.Services
             _repo.Delete(id);
         }
 
-        internal object List(string? type)
+        // Opsionale: List me filtrim sipas tipit
+        public List<Product> List(string? type = null)
         {
-            throw new NotImplementedException();
+            var products = _repo.GetAll();
+
+            if (!string.IsNullOrWhiteSpace(type))
+            {
+                products = products
+                    .Where(p => p.Type.Equals(type, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+
+            return products;
         }
     }
 }

@@ -11,16 +11,15 @@ namespace TrepcaFanshopApp.Data
         private readonly string filePath;
         protected List<T> items = new List<T>();
 
-        public FileRepository()
+        public FileRepository(string folderPath)
         {
-            var folder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "DataFiles");
-            Directory.CreateDirectory(folder);
-            filePath = Path.Combine(folder, typeof(T).Name + ".csv");
-
+            Directory.CreateDirectory(folderPath);
+            filePath = Path.Combine(folderPath, typeof(T).Name + ".csv");
             if (File.Exists(filePath))
                 LoadFromFile();
         }
 
+        // Shto objekt
         public void Add(T item)
         {
             LoadFromFile();
@@ -28,38 +27,30 @@ namespace TrepcaFanshopApp.Data
             Save();
         }
 
+        // Merr të gjithë objektet
         public List<T> GetAll()
         {
             LoadFromFile();
             return items;
         }
 
+        // Merr objekt sipas Id
         public T? GetById(int id)
         {
             LoadFromFile();
             var idProp = typeof(T).GetProperty("Id");
             if (idProp == null) return null;
-
-            return items.FirstOrDefault(x =>
-            {
-                var val = idProp.GetValue(x);
-                return val != null && Convert.ToInt32(val) == id;
-            });
+            return items.FirstOrDefault(x => (int)idProp.GetValue(x)! == id);
         }
 
+        // Update objekt
         public void Update(T updatedItem)
         {
             LoadFromFile();
             var idProp = typeof(T).GetProperty("Id");
             if (idProp == null) return;
 
-            var existing = items.FirstOrDefault(x =>
-            {
-                var val1 = idProp.GetValue(x);
-                var val2 = idProp.GetValue(updatedItem);
-                return val1 != null && val2 != null && Convert.ToInt32(val1) == Convert.ToInt32(val2);
-            });
-
+            var existing = items.FirstOrDefault(x => (int)idProp.GetValue(x)! == (int)idProp.GetValue(updatedItem)!);
             if (existing != null)
             {
                 var index = items.IndexOf(existing);
@@ -68,18 +59,14 @@ namespace TrepcaFanshopApp.Data
             }
         }
 
+        // Fshi objekt sipas Id
         public void Delete(int id)
         {
             LoadFromFile();
             var idProp = typeof(T).GetProperty("Id");
             if (idProp == null) return;
 
-            var item = items.FirstOrDefault(x =>
-            {
-                var val = idProp.GetValue(x);
-                return val != null && Convert.ToInt32(val) == id;
-            });
-
+            var item = items.FirstOrDefault(x => (int)idProp.GetValue(x)! == id);
             if (item != null)
             {
                 items.Remove(item);
@@ -87,13 +74,16 @@ namespace TrepcaFanshopApp.Data
             }
         }
 
+        // Ruaj në CSV
         public void Save()
         {
-            var props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
+            var props = typeof(T).GetProperties();
             using var writer = new StreamWriter(filePath);
+
+            // Header
             writer.WriteLine(string.Join(",", props.Select(p => p.Name)));
 
+            // Vlera
             foreach (var item in items)
             {
                 var values = props.Select(p => p.GetValue(item)?.ToString() ?? "");
@@ -101,6 +91,7 @@ namespace TrepcaFanshopApp.Data
             }
         }
 
+        // Load nga CSV
         private void LoadFromFile()
         {
             if (!File.Exists(filePath)) return;
@@ -122,9 +113,17 @@ namespace TrepcaFanshopApp.Data
                     var prop = props.FirstOrDefault(p => p.Name == headers[j]);
                     if (prop == null) continue;
 
-                    var val = Convert.ChangeType(values[j], prop.PropertyType);
-                    if (val != null)
-                        prop.SetValue(obj, val);
+                    object? val = null;
+                    var propType = prop.PropertyType;
+
+                    if (propType == typeof(int))
+                        val = int.TryParse(values[j], out int intVal) ? intVal : 0;
+                    else if (propType == typeof(double))
+                        val = double.TryParse(values[j], out double dblVal) ? dblVal : 0;
+                    else
+                        val = values[j];
+
+                    prop.SetValue(obj, val);
                 }
 
                 items.Add(obj);

@@ -1,4 +1,4 @@
-﻿namespace TrepcaFanshopApp.Models
+﻿namespace TrepcaFanshopApp.Services
 {
     public class BasketItem
     {

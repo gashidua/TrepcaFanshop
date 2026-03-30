@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TrepcaFanshopApp.Models;
 using TrepcaFanshopApp.Services;
-using System;
 using System.Collections.Generic;
 
 namespace TrepcaFanshopApp.Controllers
@@ -19,41 +18,42 @@ namespace TrepcaFanshopApp.Controllers
 
         // GET: api/basket
         [HttpGet]
-        public IActionResult GetAll()
+        public ActionResult<List<BasketItem>> GetAll()
         {
-            var items = _service.List();
+            var items = _service.GetAll();
             return Ok(items);
+        }
+
+        // GET: api/basket/{id}
+        [HttpGet("{id}")]
+        public ActionResult<BasketItem?> GetById(int id)
+        {
+            var item = _service.GetById(id);
+            if (item == null) return NotFound();
+            return Ok(item);
         }
 
         // POST: api/basket/add
         [HttpPost("add")]
-        public IActionResult Add([FromBody] BasketItem item)
+        public IActionResult Add(int productId, int quantity)
         {
-            try
-            {
-                _service.Add(item.ProductId, item.Quantity);
-                return Ok(_service.List());
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        // DELETE: api/basket/remove/{productId}
-        [HttpDelete("remove/{productId}")]
-        public IActionResult Remove(int productId)
-        {
-            _service.Remove(productId);
-            return Ok(_service.List());
+            _service.Add(productId, quantity);
+            return Ok();
         }
 
         // GET: api/basket/total
         [HttpGet("total")]
         public IActionResult Total()
         {
-            var total = _service.GetTotal();
-            return Ok(total);
+            return Ok(_service.GetTotal());
+        }
+
+        // DELETE: api/basket/{id}
+        [HttpDelete("{id}")]
+        public IActionResult Remove(int id)
+        {
+            _service.Remove(id);
+            return Ok();
         }
     }
 }

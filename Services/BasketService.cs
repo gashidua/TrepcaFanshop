@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using TrepcaFanshopApp.Models;
@@ -14,9 +14,6 @@ namespace TrepcaFanshopApp.Services
         {
             _productService = productService;
         }
-
-        // Liston të gjitha artikujt e shportës
-        public List<BasketItem> List() => _items;
 
         // Shto produkt në shportë
         public void Add(int productId, int quantity)
@@ -59,6 +56,15 @@ namespace TrepcaFanshopApp.Services
         }
 
         // Llogarit total të shportës
-        public decimal GetTotal() => (decimal)_items.Sum(x => x.Price * x.Quantity);
+        public decimal GetTotal() => (decimal)(_items?.Sum(x => x.Price * x.Quantity) ?? 0);
+
+        // Merr krejt produktet në shportë
+        public List<BasketItem> GetAll() => _items;
+
+        // Merr produkt sipas ID
+        public BasketItem? GetById(int productId)
+        {
+            return _items.FirstOrDefault(x => x.ProductId == productId);
+        }
     }
 }
