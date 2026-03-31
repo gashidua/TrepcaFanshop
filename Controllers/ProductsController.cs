@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TrepcaFanshopApp.Models;
 using TrepcaFanshopApp.Services;
+using System.Collections.Generic;
 
 namespace TrepcaFanshopApp.Controllers
 {
@@ -16,58 +17,39 @@ namespace TrepcaFanshopApp.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetAll([FromQuery] string? type)
+        public ActionResult<List<Product>> GetAll()
         {
-            var products = _service.List(type);
-            return Ok(products);
+            return Ok(_service.GetAll());
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetById(int id)
+        public ActionResult<Product?> GetById(int id)
         {
             var product = _service.GetById(id);
-            if (product == null)
-                return NotFound();
+            if (product == null) return NotFound();
             return Ok(product);
         }
 
         [HttpPost]
-        public IActionResult Add([FromBody] Product product)
+        public IActionResult Add(Product product)
         {
-            try
-            {
-                _service.Add(product);
-                return CreatedAtAction(nameof(GetById), new { id = product.Id }, product);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            _service.Add(product);
+            return Ok();
         }
 
         [HttpPut("{id}")]
-        public IActionResult Update(int id, [FromBody] Product product)
+        public IActionResult Update(int id, Product product)
         {
-            if (id != product.Id)
-                return BadRequest("Id nuk përputhet");
-
-            var existing = _service.GetById(id);
-            if (existing == null)
-                return NotFound();
-
+            if (id != product.Id) return BadRequest("ID nuk përputhet");
             _service.Update(product);
-            return NoContent();
+            return Ok();
         }
 
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
-            var existing = _service.GetById(id);
-            if (existing == null)
-                return NotFound();
-
             _service.Delete(id);
-            return NoContent();
+            return Ok();
         }
     }
 }

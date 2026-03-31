@@ -16,44 +16,47 @@ namespace TrepcaFanshopApp.Controllers
             _service = service;
         }
 
-        // GET: api/basket
         [HttpGet]
-        public ActionResult<List<BasketItem>> GetAll()
+        public ActionResult<List<Basket>> GetAll()
         {
-            var items = _service.GetAll();
-            return Ok(items);
+            return Ok(_service.GetAll());
         }
 
-        // GET: api/basket/{id}
         [HttpGet("{id}")]
-        public ActionResult<BasketItem?> GetById(int id)
+        public ActionResult<Basket?> GetById(int id)
         {
             var item = _service.GetById(id);
             if (item == null) return NotFound();
             return Ok(item);
         }
 
-        // POST: api/basket/add
-        [HttpPost("add")]
-        public IActionResult Add(int productId, int quantity)
+        [HttpPost]
+        public IActionResult Add(Basket basket)
         {
-            _service.Add(productId, quantity);
+            _service.Add(basket);
             return Ok();
         }
 
-        // GET: api/basket/total
+        [HttpPut("{id}")]
+        public IActionResult Update(int id, Basket basket)
+        {
+            if (id != basket.Id) return BadRequest();
+            _service.Update(basket);
+            return Ok();
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            _service.Delete(id);
+            return Ok();
+        }
+
+        // 🔥 TOTAL endpoint
         [HttpGet("total")]
         public IActionResult Total()
         {
             return Ok(_service.GetTotal());
-        }
-
-        // DELETE: api/basket/{id}
-        [HttpDelete("{id}")]
-        public IActionResult Remove(int id)
-        {
-            _service.Remove(id);
-            return Ok();
         }
     }
 }

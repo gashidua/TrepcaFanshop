@@ -6,6 +6,7 @@ namespace TrepcaFanshopApp.Models
     public class Basket
     {
         public int Id { get; set; }
+        public int ProductId { get; set; }
         public int Quantity { get; set; }
         public List<Product> Products { get; set; } = new List<Product>();
 

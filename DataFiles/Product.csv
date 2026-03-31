@@ -1,5 +1,12 @@
-1,Fanella Home,Fanella,25.0,M,10
-2,Fanella Away,Fanella,25.0,L,8
-3,Bileta VIP,Bileta,15.0,N/A,50
-4,Bileta Standard,Bileta,5.0,N/A,100
-5,Kapelë Trepça,Aksesore,10.0,N/A,20
+Id,Name,Price,Category,Type,Size,Stock
+1,Bileta Njï¿½ Ndeshje,5,Ticket,Single,N/A,500
+2,Fanella Home Updated,145,Fanelle,Fanella,M,7
+3,Bileta Gjysmï¿½-Vjetore,70,Ticket,Half-Season,N/A,150
+5,Fanella Away,50,Clothing,Fanella,L,80
+6,Fanella Premium,140,Clothing,Fanella,L,50
+7,Shall Fan Club,15,Accessory,Scarf,N/A,150
+8,Bileta VIP,15,Ticket,Single,N/A,50
+9,Bileta Student,3,Ticket,Single,N/A,100
+10,Bileta Fan Club,10,Ticket,Single,N/A,50
+11,Fanella Home,140,Fanelle,Fanella,M,5
+4,KapelÃ« Basket,50,Merchandise,KapelÃ«,N/A,30
