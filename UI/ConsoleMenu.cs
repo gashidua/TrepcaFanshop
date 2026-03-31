@@ -22,7 +22,9 @@ namespace TrepcaFanshopApp.UI
                 Console.WriteLine("1. Listo të gjitha produktet");
                 Console.WriteLine("2. Shto produkt të ri");
                 Console.WriteLine("3. Gjej produkt sipas Id");
-                Console.WriteLine("4. Dil");
+                Console.WriteLine("4. Update produkt");
+                Console.WriteLine("5. Delete produkt");
+                Console.WriteLine("6. Dil");
                 Console.Write("Zgjedh nje opsion: ");
 
                 var choice = Console.ReadLine();
@@ -39,6 +41,12 @@ namespace TrepcaFanshopApp.UI
                         FindById();
                         break;
                     case "4":
+                        UpdateProduct();
+                        break;
+                    case "5":
+                        DeleteProduct();
+                        break;
+                    case "6":
                         return;
                     default:
                         Console.WriteLine("Opsion i pavlefshëm!");
@@ -81,7 +89,6 @@ namespace TrepcaFanshopApp.UI
                 return;
             }
 
-            // Merr të gjitha produktet për të krijuar ID të re
             var products = _productService.GetAll();
             int newId = products.Count > 0 ? products.Max(p => p.Id) + 1 : 1;
 
@@ -103,23 +110,64 @@ namespace TrepcaFanshopApp.UI
         private void FindById()
         {
             Console.Write("Shkruaj Id e produktit: ");
-            var idInput = Console.ReadLine();
-
-            if (!int.TryParse(idInput, out int id))
+            if (!int.TryParse(Console.ReadLine(), out int id))
             {
                 Console.WriteLine("Id i pavlefshëm!");
                 return;
             }
 
             var product = _productService.GetById(id);
+            if (product == null)
+                Console.WriteLine("Produkti nuk u gjet.");
+            else
+                Console.WriteLine($"Id: {product.Id}, Name: {product.Name}, Type: {product.Type}, Price: {product.Price}, Category: {product.Category}");
+        }
 
+        private void UpdateProduct()
+        {
+            Console.Write("Shkruaj Id e produktit për Update: ");
+            if (!int.TryParse(Console.ReadLine(), out int id))
+            {
+                Console.WriteLine("Id i pavlefshëm!");
+                return;
+            }
+
+            var product = _productService.GetById(id);
             if (product == null)
             {
-                Console.WriteLine("Produkti nuk u gjet.");
+                Console.WriteLine("Produkt nuk ekziston.");
+                return;
             }
-            else
+
+            Console.Write($"Emri i ri ({product.Name}): ");
+            var name = Console.ReadLine();
+            Console.Write($"Çmimi i ri ({product.Price}): ");
+            var priceInput = Console.ReadLine();
+
+            if (!string.IsNullOrWhiteSpace(name)) product.Name = name;
+            if (decimal.TryParse(priceInput, out decimal price) && price > 0) product.Price = (double)price;
+
+            _productService.Update(product);
+            Console.WriteLine("Produkti u përditësua me sukses!");
+        }
+
+        private void DeleteProduct()
+        {
+            Console.Write("Shkruaj Id e produktit për Delete: ");
+            if (!int.TryParse(Console.ReadLine(), out int id))
             {
-                Console.WriteLine($"Id: {product.Id}, Name: {product.Name}, Type: {product.Type}, Price: {product.Price}, Category: {product.Category}");
+                Console.WriteLine("Id i pavlefshëm!");
+                return;
+            }
+
+            try
+            {
+                _productService.Delete(id);
+                Console.WriteLine("Produkti u fshi me sukses!");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
             }
         }
     }
