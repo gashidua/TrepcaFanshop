@@ -11,33 +11,37 @@ namespace TrepcaFanshopApp.Models
         public string Name { get; set; } = string.Empty;
 
         // Çmimi i produktit
-        public double Price { get; set; }
+        public decimal Price { get; set; }
 
         // Kategoria e produktit, nuk mund të jetë null
         public string Category { get; set; } = string.Empty;
 
-        // Lloji i produktit (Fanella, Bileta, Aksesore), nullable por me default string.Empty
+        // Lloji i produktit (Fanella, Bileta, Aksesore)
         public string Type { get; set; } = string.Empty;
 
-        // Madhësia e produktit (S, M, L ose N/A për bileta), nullable por me default string.Empty
+        // Madhësia e produktit (S, M, L ose N/A për bileta)
         public string Size { get; set; } = string.Empty;
 
         // Sasia në stock
         public int Stock { get; set; }
 
+        // Data kur u shtua produkti
+        public DateTime DateAdded { get; set; } = DateTime.Now;
+
         // Konstruktor default
         public Product() { }
 
-        // Opsionale: konstruktor me parametra për lehtësi krijimi
-        public Product(int id, string name, double price, string category, string type = "", string size = "", int stock = 0)
+        // Konstruktor me parametra për lehtësi krijimi
+        public Product(int id, string name, decimal price, string category, string type = "", string size = "", int stock = 0)
         {
             Id = id;
-            Name = name;
+            Name = name ?? "Produkt pa emër";
             Price = price;
-            Category = category;
-            Type = type;
-            Size = size;
+            Category = category ?? "Pa kategori";
+            Type = type ?? "";
+            Size = size ?? "";
             Stock = stock;
+            DateAdded = DateTime.Now;
         }
     }
 }

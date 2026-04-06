@@ -8,27 +8,15 @@ namespace TrepcaFanshopApp.Services
 {
     public class ProductService
     {
-        private readonly FileRepository<Product> _repo;
+        private readonly IRepository<Product> _repo;
 
-        public ProductService(FileRepository<Product> repo)
+        public ProductService(IRepository<Product> repo)
         {
             _repo = repo;
         }
 
-        public List<Product> GetAll(string? category = null)
-        {
-            var products = _repo.GetAll();
-            if (!string.IsNullOrWhiteSpace(category))
-            {
-                products = products.Where(p => p.Category.Equals(category, StringComparison.OrdinalIgnoreCase)).ToList();
-            }
-            return products;
-        }
-
-        public Product? GetById(int id)
-        {
-            return _repo.GetById(id);
-        }
+        public List<Product> GetAll() => _repo.GetAll();
+        public Product? GetById(int id) => _repo.GetById(id);
 
         public void Add(Product product)
         {
@@ -40,20 +28,55 @@ namespace TrepcaFanshopApp.Services
             _repo.Add(product);
         }
 
-        public void Update(Product updatedProduct)
+        public void Update(Product product)
         {
-            var existing = _repo.GetById(updatedProduct.Id);
-            if (existing == null) throw new Exception("Produkt nuk ekziston");
-
-            _repo.Update(updatedProduct);
+            if (_repo.GetById(product.Id) == null)
+                throw new Exception("Produkt nuk ekziston");
+            _repo.Update(product);
         }
 
         public void Delete(int id)
         {
-            var product = _repo.GetById(id);
-            if (product == null) throw new Exception("Produkt nuk ekziston");
-
+            if (_repo.GetById(id) == null)
+                throw new Exception("Produkt nuk ekziston");
             _repo.Delete(id);
+        }
+
+        public List<Product> Search(string keyword)
+        {
+            var all = _repo.GetAll();
+            if (string.IsNullOrWhiteSpace(keyword)) return all;
+            keyword = keyword.ToLower();
+            return all.Where(p => p.Name.ToLower().Contains(keyword) || p.Category.ToLower().Contains(keyword)).ToList();
+        }
+
+        public (decimal total, decimal average, decimal min, decimal max, int count) GetStats()
+        {
+            var all = _repo.GetAll();
+            if (!all.Any()) return (0, 0, 0, 0, 0);
+
+            decimal total = all.Sum(p => p.Price);
+            decimal avg = all.Average(p => p.Price);
+            decimal min = all.Min(p => p.Price);
+            decimal max = all.Max(p => p.Price);
+            int count = all.Count;
+
+            return (total, avg, min, max, count);
+        }
+
+        public void ExportToFile(string path, List<Product> products, string? note = null)
+        {
+            using var writer = new StreamWriter(path);
+            if (!string.IsNullOrWhiteSpace(note)) writer.WriteLine(note);
+
+            writer.WriteLine("Id,Name,Type,Price,Size,Stock,Category");
+            foreach (var p in products)
+            {
+                writer.WriteLine($"{p.Id},{p.Name},{p.Type},{p.Price},{p.Size},{p.Stock},{p.Category}");
+            }
+
+            var stats = GetStats();
+            writer.WriteLine($"Totali: {stats.total}, Mesatarja: {stats.average}, Min: {stats.min}, Max: {stats.max}, Numri: {stats.count}");
         }
     }
 }

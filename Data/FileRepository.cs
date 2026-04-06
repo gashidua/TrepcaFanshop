@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace TrepcaFanshopApp.Data
 {
-    public class FileRepository<T> where T : class, new()
+    public class FileRepository<T> : IRepository<T> where T : class, new()
     {
         private readonly string filePath;
         private readonly List<T> items = new List<T>();
@@ -16,7 +16,9 @@ namespace TrepcaFanshopApp.Data
             Directory.CreateDirectory(folderPath);
             filePath = Path.Combine(folderPath, typeof(T).Name + ".csv");
 
-            if (File.Exists(filePath))
+            if (!File.Exists(filePath))
+                Save();
+            else
                 LoadFromFile();
         }
 
@@ -45,7 +47,6 @@ namespace TrepcaFanshopApp.Data
             LoadFromFile();
             var idProp = typeof(T).GetProperty("Id");
             var existing = items.FirstOrDefault(x => (int)idProp!.GetValue(x)! == (int)idProp.GetValue(updatedItem)!);
-
             if (existing != null)
             {
                 var index = items.IndexOf(existing);
@@ -94,7 +95,6 @@ namespace TrepcaFanshopApp.Data
             {
                 var values = lines[i].Split(',');
                 var obj = new T();
-
                 for (int j = 0; j < headers.Length; j++)
                 {
                     var prop = props.FirstOrDefault(p => p.Name == headers[j]);
@@ -103,7 +103,6 @@ namespace TrepcaFanshopApp.Data
                     var val = Convert.ChangeType(values[j], prop.PropertyType);
                     prop.SetValue(obj, val);
                 }
-
                 items.Add(obj);
             }
         }

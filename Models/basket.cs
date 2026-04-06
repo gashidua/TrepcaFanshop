@@ -14,9 +14,9 @@ namespace TrepcaFanshopApp.Models
 
         public void RemoveProduct(Product product) => Products.Remove(product);
 
-        public double CalculateTotal()
+        public decimal CalculateTotal()
         {
-            return Products.Sum(p => p.Price);
+            return (decimal)Products.Sum(p => p.Price);
         }
     }
 }
