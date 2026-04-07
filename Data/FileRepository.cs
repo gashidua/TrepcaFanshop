@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
+using TrepcaFanshopApp.Models;
 
 namespace TrepcaFanshopApp.Data
 {
@@ -31,8 +33,22 @@ namespace TrepcaFanshopApp.Data
 
         public List<T> GetAll()
         {
-            LoadFromFile();
-            return new List<T>(items);
+            try
+            {
+                if (!File.Exists(filePath))
+                {
+                    Console.WriteLine("File nuk u gjet, po krijoj file të ri...");
+                    Save();
+                }
+
+                LoadFromFile();
+                return items;
+            }
+            catch
+            {
+                Console.WriteLine("Gabim gjatë leximit të file");
+                return new List<T>();
+            }
         }
 
         public T? GetById(int id)
@@ -106,5 +122,28 @@ namespace TrepcaFanshopApp.Data
                 items.Add(obj);
             }
         }
+
+        public void ExportProducts(string path, List<Product> products, string? note = null)
+        {
+            try
+            {
+                using var writer = new StreamWriter(path);
+
+                if (!string.IsNullOrWhiteSpace(note))
+                    writer.WriteLine(note);
+
+                writer.WriteLine("Id,Name,Type,Price,Size,Stock,Category");
+
+                foreach (var p in products)
+                {
+                    writer.WriteLine($"{p.Id},{p.Name},{p.Type},{p.Price},{p.Size},{p.Stock},{p.Category}");
+                }
+            }
+            catch
+            {
+                Console.WriteLine("Gabim gjatë shkrimit në file");
+            }
+        }
+
     }
 }
