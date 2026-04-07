@@ -18,6 +18,7 @@
 
 	<ItemGroup>
 		<Folder Include="DataFiles\" />
+		<Folder Include="TrepcaFanshopApp\obj\Debug\" />
 	</ItemGroup>
 
 </Project>

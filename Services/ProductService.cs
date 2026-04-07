@@ -18,28 +18,70 @@ namespace TrepcaFanshopApp.Services
         public List<Product> GetAll() => _repo.GetAll();
         public Product? GetById(int id) => _repo.GetById(id);
 
-        public void Add(Product product)
+        public bool Add(Product product)
         {
             if (string.IsNullOrWhiteSpace(product.Name))
-                throw new Exception("Emri i produktit nuk mund të jetë bosh");
+            {
+                Console.WriteLine("Emri i produktit nuk mund të jetë bosh");
+                return false;
+            }
+
             if (product.Price <= 0)
-                throw new Exception("Çmimi duhet të jetë më i madh se 0");
+            {
+                Console.WriteLine("Çmimi duhet të jetë më i madh se 0");
+                return false;
+            }
 
-            _repo.Add(product);
+            try
+            {
+                _repo.Add(product);
+                return true;
+            }
+            catch
+            {
+                Console.WriteLine("Gabim gjatë shtimit të produktit");
+                return false;
+            }
         }
 
-        public void Update(Product product)
+        public bool Update(Product product)
         {
-            if (_repo.GetById(product.Id) == null)
-                throw new Exception("Produkt nuk ekziston");
-            _repo.Update(product);
+            try
+            {
+                if (_repo.GetById(product.Id) == null)
+                {
+                    Console.WriteLine("Produkt nuk ekziston");
+                    return false;
+                }
+
+                _repo.Update(product);
+                return true;
+            }
+            catch
+            {
+                Console.WriteLine("Gabim gjatë përditësimit");
+                return false;
+            }
         }
 
-        public void Delete(int id)
+        public bool Delete(int id)
         {
-            if (_repo.GetById(id) == null)
-                throw new Exception("Produkt nuk ekziston");
-            _repo.Delete(id);
+            try
+            {
+                if (_repo.GetById(id) == null)
+                {
+                    Console.WriteLine("Produkt nuk ekziston");
+                    return false;
+                }
+
+                _repo.Delete(id);
+                return true;
+            }
+            catch
+            {
+                Console.WriteLine("Gabim gjatë fshirjes");
+                return false;
+            }
         }
 
         public List<Product> Search(string keyword)
@@ -48,6 +90,30 @@ namespace TrepcaFanshopApp.Services
             if (string.IsNullOrWhiteSpace(keyword)) return all;
             keyword = keyword.ToLower();
             return all.Where(p => p.Name.ToLower().Contains(keyword) || p.Category.ToLower().Contains(keyword)).ToList();
+        }
+
+        public List<Product> FilterByPrice(decimal minPrice)
+        {
+            try
+            {
+                return _repo.GetAll()
+                    .Where(p => p.Price >= minPrice)
+                    .ToList();
+            }
+            catch
+            {
+                Console.WriteLine("Gabim gjatë filtrimit");
+                return new List<Product>();
+            }
+        }
+
+        public List<Product> SortByPrice(bool ascending = true)
+        {
+            var all = _repo.GetAll();
+
+            return ascending
+                ? all.OrderBy(p => p.Price).ToList()
+                : all.OrderByDescending(p => p.Price).ToList();
         }
 
         public (decimal total, decimal average, decimal min, decimal max, int count) GetStats()
@@ -66,17 +132,27 @@ namespace TrepcaFanshopApp.Services
 
         public void ExportToFile(string path, List<Product> products, string? note = null)
         {
-            using var writer = new StreamWriter(path);
-            if (!string.IsNullOrWhiteSpace(note)) writer.WriteLine(note);
-
-            writer.WriteLine("Id,Name,Type,Price,Size,Stock,Category");
-            foreach (var p in products)
+            try
             {
-                writer.WriteLine($"{p.Id},{p.Name},{p.Type},{p.Price},{p.Size},{p.Stock},{p.Category}");
-            }
+                var fileRepo = _repo as FileRepository<Product>;
 
-            var stats = GetStats();
-            writer.WriteLine($"Totali: {stats.total}, Mesatarja: {stats.average}, Min: {stats.min}, Max: {stats.max}, Numri: {stats.count}");
+                if (fileRepo == null)
+                {
+                    Console.WriteLine("Repository nuk suporton export");
+                    return;
+                }
+
+                fileRepo.ExportProducts(path, products, note);
+
+                var stats = GetStats();
+
+                File.AppendAllText(path,
+                    $"\nTotali: {stats.total}, Mesatarja: {stats.average}, Min: {stats.min}, Max: {stats.max}, Numri: {stats.count}");
+            }
+            catch
+            {
+                Console.WriteLine("Gabim gjatë eksportit");
+            }
         }
     }
 }

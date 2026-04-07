@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using Microsoft.JSInterop.Infrastructure;
 using TrepcaFanshopApp.Data;
 using TrepcaFanshopApp.Models;
 using TrepcaFanshopApp.Services;
@@ -41,11 +42,13 @@ namespace TrepcaFanshop.Tests
         }
 
         [Fact]
-        public void Add_EmptyName_ThrowsException()
+        public void Add_EmptyName_ReturnsFalse()
         {
             var product = new Product { Id = 1, Name = "", Category = "Merch", Price = 10 };
-            var ex = Assert.Throws<Exception>(() => service.Add(product));
-            Assert.Equal("Emri i produktit nuk mund të jetë bosh", ex.Message);
+
+            var result = service.Add(product);
+
+            Assert.False(result);
         }
 
         [Fact]
@@ -78,6 +81,17 @@ namespace TrepcaFanshop.Tests
             Assert.Equal(10m, stats.min);
             Assert.Equal(20m, stats.max);
             Assert.Equal(2, stats.count);
+        }
+        [Fact]
+        public void Filter_ByPrice_ReturnsCorrect()
+        {
+            service.Add(new Product { Id = 1, Name = "A", Category = "M", Price = 5 });
+            service.Add(new Product { Id = 2, Name = "B", Category = "M", Price = 20 });
+
+            var result = service.FilterByPrice(10);
+
+            Assert.Single(result);
+            Assert.Equal(20, result[0].Price);
         }
     }
 }

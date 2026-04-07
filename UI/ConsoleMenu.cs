@@ -26,7 +26,9 @@ namespace TrepcaFanshopApp.UI
                 Console.WriteLine("4. Update produkt");
                 Console.WriteLine("5. Delete produkt");
                 Console.WriteLine("6. Eksport rezultate");
-                Console.WriteLine("7. Dil");
+                Console.WriteLine("7. Kërko produktet");
+                Console.WriteLine("8. Filtro sipas çmimit");
+                Console.WriteLine("9. Dil");
                 Console.Write("Zgjedh opsion: ");
 
                 var choice = Console.ReadLine();
@@ -51,6 +53,12 @@ namespace TrepcaFanshopApp.UI
                         ExportProducts();
                         break;
                     case "7":
+                        SearchProducts();
+                        break;
+                    case "8":
+                        FilterByPrice();
+                        break;
+                    case "9":
                         return;
                     default:
                         Console.WriteLine("Opsion i pavlefshëm!");
@@ -208,12 +216,94 @@ namespace TrepcaFanshopApp.UI
         private void ExportProducts()
         {
             Console.Write("Shkruaj path ku do të ruhet raporti (p.sh. raport.txt): ");
-            var path = Console.ReadLine();
-            if (string.IsNullOrWhiteSpace(path)) path = "raport.txt";
+            string path = Console.ReadLine();
 
-            var products = _productService.GetAll();
-            _productService.ExportToFile(path, products, "Raporti i produkteve");
-            Console.WriteLine("Produkte eksportuan me sukses!");
+            try
+            {
+                if (string.IsNullOrWhiteSpace(path))
+                    path = "raport.txt";
+
+                var products = _productService.GetAll();
+
+                if (!products.Any())
+                {
+                    Console.WriteLine("Nuk ka produkte për eksport.");
+                    return;
+                }
+
+                _productService.ExportToFile(path, products, "Raporti i produkteve");
+
+                Console.WriteLine("Produktet u eksportuan me sukses!");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Gabim gjatë eksportit: {ex.Message}");
+            }
         }
+
+        private void SearchProducts()
+        {
+            Console.Write("Shkruaj keyword: ");
+            string keyword = Console.ReadLine();
+
+            try
+            {
+                if (string.IsNullOrWhiteSpace(keyword))
+                {
+                    Console.WriteLine("Ju lutem shkruani diçka për kërkim");
+                    return;
+                }
+
+                var results = _productService.Search(keyword);
+
+                if (!results.Any())
+                {
+                    Console.WriteLine("Asnjë produkt nuk u gjet");
+                    return;
+                }
+
+                foreach (var p in results)
+                {
+                    Console.WriteLine($"{p.Name} - {p.Category} - {p.Price}€");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Gabim gjatë kërkimit: {ex.Message}");
+            }
+        }
+
+        private void FilterByPrice()
+        {
+            Console.Write("Shkruaj çmimin minimal: ");
+            string input = Console.ReadLine();
+
+            try
+            {
+                if (!decimal.TryParse(input, out decimal price))
+                {
+                    Console.WriteLine("Ju lutem shkruani numër valid");
+                    return;
+                }
+
+                var results = _productService.FilterByPrice(price);
+
+                if (!results.Any())
+                {
+                    Console.WriteLine("Asnjë produkt nuk u gjet");
+                    return;
+                }
+
+                foreach (var p in results)
+                {
+                    Console.WriteLine($"{p.Name} - {p.Price}€");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Gabim gjatë filtrimit: {ex.Message}");
+            }
+        }
+
     }
 }
