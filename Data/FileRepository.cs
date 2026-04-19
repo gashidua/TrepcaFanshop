@@ -53,9 +53,21 @@ namespace TrepcaFanshopApp.Data
 
         public T? GetById(int id)
         {
-            LoadFromFile();
-            var idProp = typeof(T).GetProperty("Id");
-            return items.FirstOrDefault(x => (int)idProp!.GetValue(x)! == id);
+            try
+            {
+                LoadFromFile();
+                var idProp = typeof(T).GetProperty("Id");
+
+                if (idProp == null)
+                    return null;
+
+                return items.FirstOrDefault(x => (int)idProp.GetValue(x)! == id);
+            }
+            catch
+            {
+                Console.WriteLine("Gabim gjatë kërkimit të produktit");
+                return null;
+            }
         }
 
         public void Update(T updatedItem)
@@ -98,28 +110,45 @@ namespace TrepcaFanshopApp.Data
 
         private void LoadFromFile()
         {
-            if (!File.Exists(filePath)) return;
-            items.Clear();
-
-            var lines = File.ReadAllLines(filePath);
-            if (lines.Length < 2) return;
-
-            var headers = lines[0].Split(',');
-            var props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
-            for (int i = 1; i < lines.Length; i++)
+            try
             {
-                var values = lines[i].Split(',');
-                var obj = new T();
-                for (int j = 0; j < headers.Length; j++)
-                {
-                    var prop = props.FirstOrDefault(p => p.Name == headers[j]);
-                    if (prop == null) continue;
+                if (!File.Exists(filePath)) return;
 
-                    var val = Convert.ChangeType(values[j], prop.PropertyType);
-                    prop.SetValue(obj, val);
+                items.Clear();
+
+                var lines = File.ReadAllLines(filePath);
+                if (lines.Length < 2) return;
+
+                var headers = lines[0].Split(',');
+                var props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+                for (int i = 1; i < lines.Length; i++)
+                {
+                    var values = lines[i].Split(',');
+                    var obj = new T();
+
+                    for (int j = 0; j < headers.Length; j++)
+                    {
+                        var prop = props.FirstOrDefault(p => p.Name == headers[j]);
+                        if (prop == null || j >= values.Length) continue;
+
+                        try
+                        {
+                            var val = Convert.ChangeType(values[j], prop.PropertyType);
+                            prop.SetValue(obj, val);
+                        }
+                        catch
+                        {
+                            Console.WriteLine($"Gabim në rreshtin {i} për fushën {headers[j]}");
+                        }
+                    }
+
+                    items.Add(obj);
                 }
-                items.Add(obj);
+            }
+            catch
+            {
+                Console.WriteLine("Gabim gjatë leximit të file");
             }
         }
 

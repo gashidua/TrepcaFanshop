@@ -118,16 +118,26 @@ namespace TrepcaFanshopApp.Services
 
         public (decimal total, decimal average, decimal min, decimal max, int count) GetStats()
         {
-            var all = _repo.GetAll();
-            if (!all.Any()) return (0, 0, 0, 0, 0);
+            try
+            {
+                var all = _repo.GetAll();
 
-            decimal total = all.Sum(p => p.Price);
-            decimal avg = all.Average(p => p.Price);
-            decimal min = all.Min(p => p.Price);
-            decimal max = all.Max(p => p.Price);
-            int count = all.Count;
+                if (all == null || !all.Any())
+                    return (0, 0, 0, 0, 0);
 
-            return (total, avg, min, max, count);
+                decimal total = all.Sum(p => p.Price);
+                decimal average = all.Average(p => p.Price);
+                decimal min = all.Min(p => p.Price);
+                decimal max = all.Max(p => p.Price);
+                int count = all.Count;
+
+                return (total, average, min, max, count);
+            }
+            catch
+            {
+                Console.WriteLine("Gabim gjatë kalkulimit të statistikave");
+                return (0, 0, 0, 0, 0);
+            }
         }
 
         public void ExportToFile(string path, List<Product> products, string? note = null)
