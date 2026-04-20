@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TrepcaFanshopApp.Models;
 using TrepcaFanshopApp.Data;
+using TrepcaFanshopApp.Models;
 
 namespace TrepcaFanshopApp.Services
 {
@@ -18,24 +18,27 @@ namespace TrepcaFanshopApp.Services
         }
 
         public List<Basket> GetAll() => _repo.GetAll();
+
         public Basket? GetById(int id) => _repo.GetById(id);
 
         public void Add(Basket basket)
         {
-            var product = _productService.GetById(basket.ProductId)
-                ?? throw new Exception("Produkti nuk ekziston");
+            ValidateBasket(basket);
 
-            if (basket.Quantity <= 0) throw new Exception("Sasia duhet të jetë më shumë se 0");
-            if (basket.Quantity > product.Stock) throw new Exception($"Vetëm {product.Stock} njësi në stok");
+            var product = GetProductOrThrow(basket.ProductId);
 
-            var existing = _repo.GetAll().FirstOrDefault(x => x.ProductId == basket.ProductId);
+            ValidateStock(basket.Quantity, product.Stock);
+
+            var existing = _repo.GetAll()
+                .FirstOrDefault(x => x.ProductId == basket.ProductId);
+
             if (existing != null)
             {
-                var newQuantity = existing.Quantity + basket.Quantity;
-                if (newQuantity > product.Stock)
-                    throw new Exception($"Vetëm {product.Stock} njësi në stok");
+                var newQty = existing.Quantity + basket.Quantity;
 
-                existing.Quantity = newQuantity;
+                ValidateStock(newQty, product.Stock);
+
+                existing.Quantity = newQty;
                 _repo.Update(existing);
             }
             else
@@ -47,13 +50,13 @@ namespace TrepcaFanshopApp.Services
         public void Update(Basket basket)
         {
             var existing = _repo.GetById(basket.Id)
-                ?? throw new Exception("Item nuk ekziston");
+                ?? throw new Exception("Basket item not found");
 
-            var product = _productService.GetById(basket.ProductId)
-                ?? throw new Exception("Produkti nuk ekziston");
+            ValidateBasket(basket);
 
-            if (basket.Quantity <= 0) throw new Exception("Sasia duhet të jetë më shumë se 0");
-            if (basket.Quantity > product.Stock) throw new Exception("Nuk ka mjaftueshëm stok");
+            var product = GetProductOrThrow(basket.ProductId);
+
+            ValidateStock(basket.Quantity, product.Stock);
 
             _repo.Update(basket);
         }
@@ -61,21 +64,51 @@ namespace TrepcaFanshopApp.Services
         public void Delete(int id)
         {
             var existing = _repo.GetById(id)
-                ?? throw new Exception("Item nuk ekziston");
+                ?? throw new Exception("Basket item not found");
 
             _repo.Delete(id);
         }
 
         public decimal GetTotal()
         {
+            var baskets = _repo.GetAll();
+
+            var products = baskets
+                .Select(b => _productService.GetById(b.ProductId))
+                .Where(p => p != null)
+                .ToList();
+
             decimal total = 0;
-            foreach (var item in _repo.GetAll())
+
+            foreach (var item in baskets)
             {
-                var product = _productService.GetById(item.ProductId);
+                var product = products.FirstOrDefault(p => p!.Id == item.ProductId);
+
                 if (product != null)
                     total += product.Price * item.Quantity;
             }
+
             return total;
+        }
+
+        // ---------------- HELPERS ----------------
+
+        private Product GetProductOrThrow(int productId)
+        {
+            return _productService.GetById(productId)
+                ?? throw new Exception("Product not found");
+        }
+
+        private void ValidateBasket(Basket basket)
+        {
+            if (basket.Quantity <= 0)
+                throw new Exception("Invalid quantity");
+        }
+
+        private void ValidateStock(int qty, int stock)
+        {
+            if (qty > stock)
+                throw new Exception("Not enough stock");
         }
     }
 }

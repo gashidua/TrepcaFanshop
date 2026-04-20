@@ -1,21 +1,19 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
-using Microsoft.JSInterop.Infrastructure;
-using TrepcaFanshopApp.Data;
+using Xunit;
 using TrepcaFanshopApp.Models;
 using TrepcaFanshopApp.Services;
-using Xunit;
+using TrepcaFanshopApp.Data;
 
 namespace TrepcaFanshop.Tests
 {
-    public class TestProducts : IDisposable
+    public class ProductServiceTests : IDisposable
     {
         private readonly string testFolder = "TestData";
         private readonly FileRepository<Product> repo;
         private readonly ProductService service;
 
-        public TestProducts()
+        public ProductServiceTests()
         {
             if (Directory.Exists(testFolder))
                 Directory.Delete(testFolder, true);
@@ -30,60 +28,146 @@ namespace TrepcaFanshop.Tests
                 Directory.Delete(testFolder, true);
         }
 
+        // ---------------- CREATE TEST ----------------
         [Fact]
-        public void Add_ValidProduct_Success()
+        public void Add_Product_ShouldBeAddedSuccessfully()
         {
-            var product = new Product { Id = 1, Name = "Fanella", Category = "Merch", Price = 15, Type = "Fanella", Size = "M", Stock = 10 };
+            var product = new Product
+            {
+                Id = 1,
+                Name = "Fanella",
+                Category = "Merch",
+                Price = 15,
+                Type = "T-Shirt",
+                Size = "M",
+                Stock = 10
+            };
+
             service.Add(product);
 
             var all = service.GetAll();
+
             Assert.Single(all);
             Assert.Equal("Fanella", all[0].Name);
         }
 
+        // ---------------- INVALID INPUT TEST ----------------
         [Fact]
-        public void Add_EmptyName_ReturnsFalse()
+        public void Add_InvalidProduct_ShouldThrowException()
         {
-            var product = new Product { Id = 1, Name = "", Category = "Merch", Price = 10 };
+            var product = new Product
+            {
+                Id = 1,
+                Name = "",
+                Category = "Merch",
+                Price = 10
+            };
 
-            var result = service.Add(product);
-
-            Assert.False(result);
+            Assert.Throws<Exception>(() => service.Add(product));
         }
 
+        // ---------------- GET BY ID TEST ----------------
         [Fact]
-        public void Search_ExistingAndNonExisting()
+        public void GetById_ShouldReturnCorrectProduct()
         {
-            var product1 = new Product { Id = 1, Name = "Fanella", Category = "Merch", Price = 15 };
-            var product2 = new Product { Id = 2, Name = "Bileta", Category = "Event", Price = 5 };
+            var product = new Product
+            {
+                Id = 1,
+                Name = "Test Product",
+                Category = "Merch",
+                Price = 15,
+                Type = "T-Shirt",
+                Size = "L",
+                Stock = 10
+            };
 
-            service.Add(product1);
-            service.Add(product2);
+            service.Add(product);
 
-            var result1 = service.Search("Fanella");
-            Assert.Single(result1);
-            Assert.Equal("Fanella", result1[0].Name);
+            var result = service.GetById(1);
 
-            var result2 = service.Search("NukEkziston");
-            Assert.Empty(result2);
+            Assert.NotNull(result);
+            Assert.Equal("Test Product", result.Name);
         }
 
+        // ---------------- UPDATE TEST ----------------
         [Fact]
-        public void GetStats_CorrectCalculation()
+        public void Update_Product_ShouldChangeValues()
         {
-            service.Add(new Product { Id = 1, Name = "Fanella", Category = "Merch", Price = 10 });
-            service.Add(new Product { Id = 2, Name = "Bileta", Category = "Event", Price = 20 });
+            var product = new Product
+            {
+                Id = 1,
+                Name = "Old Name",
+                Category = "Merch",
+                Price = 10,
+                Type = "T-Shirt",
+                Size = "M",
+                Stock = 5
+            };
 
-            var stats = service.GetStats();
+            service.Add(product);
 
-            Assert.Equal(30m, stats.total);
-            Assert.Equal(15m, stats.average);
-            Assert.Equal(10m, stats.min);
-            Assert.Equal(20m, stats.max);
-            Assert.Equal(2, stats.count);
+            product.Name = "New Name";
+            product.Price = 25;
+
+            service.Update(product);
+
+            var result = service.GetById(1);
+
+            Assert.Equal("New Name", result.Name);
+            Assert.Equal(25, result.Price);
         }
+
+        // ---------------- DELETE TEST ----------------
         [Fact]
-        public void Filter_ByPrice_ReturnsCorrect()
+        public void Delete_Product_ShouldRemoveIt()
+        {
+            var product = new Product
+            {
+                Id = 1,
+                Name = "Fanella",
+                Category = "Merch",
+                Price = 10,
+                Type = "T-Shirt",
+                Size = "M",
+                Stock = 5
+            };
+
+            service.Add(product);
+
+            service.Delete(1);
+
+            Assert.Empty(service.GetAll());
+        }
+
+        // ---------------- SEARCH TEST ----------------
+        [Fact]
+        public void Search_ShouldReturnCorrectResult()
+        {
+            service.Add(new Product
+            {
+                Id = 1,
+                Name = "Fanella Trepca",
+                Category = "Merch",
+                Price = 10
+            });
+
+            service.Add(new Product
+            {
+                Id = 2,
+                Name = "Bileta",
+                Category = "Event",
+                Price = 5
+            });
+
+            var result = service.Search("Fanella");
+
+            Assert.Single(result);
+            Assert.Equal("Fanella Trepca", result[0].Name);
+        }
+
+        // ---------------- FILTER TEST ----------------
+        [Fact]
+        public void FilterByPrice_ShouldReturnCorrectProducts()
         {
             service.Add(new Product { Id = 1, Name = "A", Category = "M", Price = 5 });
             service.Add(new Product { Id = 2, Name = "B", Category = "M", Price = 20 });
@@ -92,6 +176,22 @@ namespace TrepcaFanshop.Tests
 
             Assert.Single(result);
             Assert.Equal(20, result[0].Price);
+        }
+
+        // ---------------- STATS TEST ----------------
+        [Fact]
+        public void GetStats_ShouldReturnCorrectValues()
+        {
+            service.Add(new Product { Id = 1, Name = "A", Category = "M", Price = 10 });
+            service.Add(new Product { Id = 2, Name = "B", Category = "M", Price = 20 });
+
+            var stats = service.GetStats();
+
+            Assert.Equal(30m, stats.total);
+            Assert.Equal(15m, stats.average);
+            Assert.Equal(10m, stats.min);
+            Assert.Equal(20m, stats.max);
+            Assert.Equal(2, stats.count);
         }
     }
 }

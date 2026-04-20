@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TrepcaFanshopApp.Models;
 using TrepcaFanshopApp.Services;
-using System.Collections.Generic;
+using System;
 
 namespace TrepcaFanshopApp.Controllers
 {
@@ -16,63 +16,82 @@ namespace TrepcaFanshopApp.Controllers
             _service = service;
         }
 
+        // GET: api/product
         [HttpGet]
-        public ActionResult<List<Product>> GetAll()
+        public IActionResult GetAll()
         {
-            return Ok(_service.GetAll());
+            var products = _service.GetAll();
+            return Ok(products);
         }
 
+        // GET: api/product/{id}
         [HttpGet("{id}")]
-        public ActionResult<Product?> GetById(int id)
+        public IActionResult GetById(int id)
         {
             var product = _service.GetById(id);
-            if (product == null) return NotFound();
+
+            if (product == null)
+                return NotFound(new { message = "Product not found" });
+
             return Ok(product);
         }
 
+        // POST: api/product
         [HttpPost]
-        public IActionResult Add(Product product)
+        public IActionResult Create(Product product)
         {
-            var result = _service.Add(product);
-
-            if (!result)
-                return BadRequest("Produkti nuk u shtua. Kontrollo të dhënat.");
-
-            return Ok("Produkti u shtua me sukses");
+            try
+            {
+                _service.Add(product);
+                return Ok(new { message = "Product created successfully" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
+        // PUT: api/product/{id}
         [HttpPut("{id}")]
         public IActionResult Update(int id, Product product)
         {
-            if (id != product.Id)
-                return BadRequest("ID nuk përputhet");
+            try
+            {
+                if (id != product.Id)
+                    return BadRequest(new { message = "ID mismatch" });
 
-            var result = _service.Update(product);
+                _service.Update(product);
 
-            if (!result)
-                return NotFound("Produkti nuk ekziston");
+                return Ok(new { message = "Product updated successfully" });
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("not found"))
+                    return NotFound(new { message = ex.Message });
 
-            return Ok("Produkti u përditësua");
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
+        // DELETE: api/product/{id}
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
-            var result = _service.Delete(id);
+            try
+            {
+                _service.Delete(id);
+                return Ok(new { message = "Product deleted successfully" });
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("not found"))
+                    return NotFound(new { message = ex.Message });
 
-            if (!result)
-                return NotFound("Produkti nuk ekziston");
-
-            return Ok("Produkti u fshi");
+                return BadRequest(new { message = ex.Message });
+            }
         }
-        
-        [HttpGet("stats")]
-        public IActionResult GetStats()
-        {
-            var stats = _service.GetStats();
-            return Ok(stats);
-        }
 
+        // GET: api/product/search?keyword=...
         [HttpGet("search")]
         public IActionResult Search(string keyword)
         {
@@ -80,6 +99,7 @@ namespace TrepcaFanshopApp.Controllers
             return Ok(result);
         }
 
+        // GET: api/product/filter?minPrice=10
         [HttpGet("filter")]
         public IActionResult Filter(decimal minPrice)
         {
@@ -87,5 +107,12 @@ namespace TrepcaFanshopApp.Controllers
             return Ok(result);
         }
 
+        // GET: api/product/stats
+        [HttpGet("stats")]
+        public IActionResult GetStats()
+        {
+            var stats = _service.GetStats();
+            return Ok(stats);
+        }
     }
 }

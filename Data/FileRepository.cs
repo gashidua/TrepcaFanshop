@@ -1,178 +1,136 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text.Json;
-using TrepcaFanshopApp.Models;
 
 namespace TrepcaFanshopApp.Data
 {
     public class FileRepository<T> : IRepository<T> where T : class, new()
     {
         private readonly string filePath;
-        private readonly List<T> items = new List<T>();
+        private readonly string folderPath;
+        private List<T> items = new();
 
         public FileRepository(string folderPath)
         {
+            this.folderPath = folderPath;
+
+            // âœ… KJO Ã‹SHTÃ‹ FIX KRYESORI
             Directory.CreateDirectory(folderPath);
+
             filePath = Path.Combine(folderPath, typeof(T).Name + ".csv");
 
             if (!File.Exists(filePath))
-                Save();
-            else
-                LoadFromFile();
+            {
+                File.WriteAllText(filePath, "");
+            }
+
+            LoadFromFile();
+        }
+
+        public List<T> GetAll()
+        {
+            LoadFromFile();
+            return items;
+        }
+
+        public T? GetById(int id)
+        {
+            LoadFromFile();
+
+            return items.FirstOrDefault(x =>
+            {
+                var prop = x.GetType().GetProperty("Id");
+                if (prop == null) return false;
+
+                return (int)(prop.GetValue(x) ?? 0) == id;
+            });
         }
 
         public void Add(T item)
         {
             LoadFromFile();
             items.Add(item);
-            Save();
+            SaveToFile();
         }
 
-        public List<T> GetAll()
-        {
-            try
-            {
-                if (!File.Exists(filePath))
-                {
-                    Console.WriteLine("File nuk u gjet, po krijoj file të ri...");
-                    Save();
-                }
-
-                LoadFromFile();
-                return items;
-            }
-            catch
-            {
-                Console.WriteLine("Gabim gjatë leximit të file");
-                return new List<T>();
-            }
-        }
-
-        public T? GetById(int id)
-        {
-            try
-            {
-                LoadFromFile();
-                var idProp = typeof(T).GetProperty("Id");
-
-                if (idProp == null)
-                    return null;
-
-                return items.FirstOrDefault(x => (int)idProp.GetValue(x)! == id);
-            }
-            catch
-            {
-                Console.WriteLine("Gabim gjatë kërkimit të produktit");
-                return null;
-            }
-        }
-
-        public void Update(T updatedItem)
+        public void Update(T item)
         {
             LoadFromFile();
-            var idProp = typeof(T).GetProperty("Id");
-            var existing = items.FirstOrDefault(x => (int)idProp!.GetValue(x)! == (int)idProp.GetValue(updatedItem)!);
-            if (existing != null)
-            {
-                var index = items.IndexOf(existing);
-                items[index] = updatedItem;
-                Save();
-            }
+
+            var prop = item.GetType().GetProperty("Id");
+            if (prop == null) return;
+
+            var id = (int)(prop.GetValue(item) ?? 0);
+
+            var existing = GetById(id);
+            if (existing == null) return;
+
+            var index = items.IndexOf(existing);
+            items[index] = item;
+
+            SaveToFile();
         }
 
         public void Delete(int id)
         {
             LoadFromFile();
-            var idProp = typeof(T).GetProperty("Id");
-            var item = items.FirstOrDefault(x => (int)idProp!.GetValue(x)! == id);
-            if (item != null)
-            {
-                items.Remove(item);
-                Save();
-            }
+
+            var item = GetById(id);
+            if (item == null) return;
+
+            items.Remove(item);
+            SaveToFile();
         }
 
-        private void Save()
+        private void SaveToFile()
         {
-            var props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
             using var writer = new StreamWriter(filePath);
-            writer.WriteLine(string.Join(",", props.Select(p => p.Name)));
 
             foreach (var item in items)
             {
-                var values = props.Select(p => p.GetValue(item)?.ToString() ?? "");
-                writer.WriteLine(string.Join(",", values));
+                var props = item.GetType().GetProperties();
+
+                var line = string.Join(",",
+                    props.Select(p => p.GetValue(item)?.ToString() ?? ""));
+
+                writer.WriteLine(line);
             }
         }
 
         private void LoadFromFile()
         {
-            try
+            items = new List<T>();
+
+            if (!File.Exists(filePath))
+                return;
+
+            var lines = File.ReadAllLines(filePath);
+
+            foreach (var line in lines)
             {
-                if (!File.Exists(filePath)) return;
+                if (string.IsNullOrWhiteSpace(line))
+                    continue;
 
-                items.Clear();
+                var obj = new T();
+                var props = obj.GetType().GetProperties();
+                var values = line.Split(',');
 
-                var lines = File.ReadAllLines(filePath);
-                if (lines.Length < 2) return;
-
-                var headers = lines[0].Split(',');
-                var props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
-                for (int i = 1; i < lines.Length; i++)
+                for (int i = 0; i < props.Length && i < values.Length; i++)
                 {
-                    var values = lines[i].Split(',');
-                    var obj = new T();
-
-                    for (int j = 0; j < headers.Length; j++)
+                    try
                     {
-                        var prop = props.FirstOrDefault(p => p.Name == headers[j]);
-                        if (prop == null || j >= values.Length) continue;
-
-                        try
-                        {
-                            var val = Convert.ChangeType(values[j], prop.PropertyType);
-                            prop.SetValue(obj, val);
-                        }
-                        catch
-                        {
-                            Console.WriteLine($"Gabim në rreshtin {i} për fushën {headers[j]}");
-                        }
+                        var converted = Convert.ChangeType(values[i], props[i].PropertyType);
+                        props[i].SetValue(obj, converted);
                     }
-
-                    items.Add(obj);
+                    catch
+                    {
+                        // ignore invalid values
+                    }
                 }
-            }
-            catch
-            {
-                Console.WriteLine("Gabim gjatë leximit të file");
+
+                items.Add(obj);
             }
         }
-
-        public void ExportProducts(string path, List<Product> products, string? note = null)
-        {
-            try
-            {
-                using var writer = new StreamWriter(path);
-
-                if (!string.IsNullOrWhiteSpace(note))
-                    writer.WriteLine(note);
-
-                writer.WriteLine("Id,Name,Type,Price,Size,Stock,Category");
-
-                foreach (var p in products)
-                {
-                    writer.WriteLine($"{p.Id},{p.Name},{p.Type},{p.Price},{p.Size},{p.Stock},{p.Category}");
-                }
-            }
-            catch
-            {
-                Console.WriteLine("Gabim gjatë shkrimit në file");
-            }
-        }
-
     }
 }
