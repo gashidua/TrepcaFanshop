@@ -156,6 +156,14 @@ Sistemi është i ndarë në:
 
 ---
 
+
+## Testing
+
+Testet e implementuara verifikojnë funksionalitetin bazë të CRUD operacioneve dhe logjikës së biznesit. Megjithatë, test coverage për edge cases dhe integration scenarios është ende i kufizuar dhe mund të zgjerohet në të ardhmen.
+
+
+---
+
 ## 🏁 Përfundim
 
 TrepcaFanshopApp është një sistem i kompletuar që demonstron:
@@ -165,3 +173,5 @@ TrepcaFanshopApp është një sistem i kompletuar që demonstron:
 - përdorim të design patterns (Repository + Service)
 - dokumentim të plotë teknik
 - strukturë të gatshme për zhvillim në sistem real production
+
+Ky projekt është zhvilluar si një sistem edukativ për të demonstruar parimet bazë të arkitekturës së softuerit dhe nuk përfaqëson një sistem production-ready.
