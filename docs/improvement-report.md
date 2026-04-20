@@ -4,86 +4,189 @@
 
 ## Përmbledhje
 
-Gjatë këtij sprinti janë implementuar përmirësime strukturore që rrisin cilësinë, stabilitetin dhe mirëmbajtjen e sistemit.
+Gjatë këtij sprinti janë realizuar përmirësime të menduara që adresojnë dobësi reale të sistemit dhe përmirësojnë strukturën, stabilitetin dhe mirëmbajtjen e tij.
 
-Këto përmirësime fokusohen në ndarjen e përgjegjësive, përmirësimin e validimit dhe rritjen e stabilitetit të aplikacionit.
+Fokusi kryesor ka qenë:
+- ndarja e përgjegjësive (separation of concerns)
+- rritja e besueshmërisë së aplikacionit
+- sigurimi i integritetit të të dhënave
 
----
-
-## ✅ 1. Service Layer
-
-**Problemi:**
-UI ishte i lidhur direkt me repository, duke krijuar tight coupling.
-
-**Ndryshimi:**
-U krijua ProductService për të menaxhuar logjikën e biznesit.
-
-**Përmirësimi:**
-- decoupling of layers
-- improves maintainability
-- supports scalability
-- clean separation of concerns
-
-**Pse ka rëndësi:**
-E bën sistemin më të testueshëm, më fleksibël dhe më të lehtë për mirëmbajtje.
+Përmirësimet nuk janë vetëm funksionale, por edhe arkitekturore, duke e afruar sistemin me praktika më profesionale të zhvillimit të softuerit.
 
 ---
 
-## ✅ 2. Validimi i inputit
+## ✅ 1. Introduktimi i Service Layer
 
-**Problemi:**
-Input invalid mund të futet në sistem.
+### Problemi (Para)
 
-**Ndryshimi:**
-U shtua validim për emër dhe çmim.
+UI ishte i lidhur direkt me shtresën e të dhënave (Repository), duke krijuar tight coupling dhe duke përzier logjikën e prezantimit me atë të biznesit.
 
-**Përmirësimi:**
-- ruan integritetin e të dhënave
-- shmang gabime logjike
+Shembull:
+UI → ProductRepository → Data Storage
 
-**Pse ka rëndësi:**
-Siguron që sistemi pranon vetëm të dhëna valide.
+Kjo sillte:
+- përgjegjësi të tepërta në UI
+- vështirësi në mirëmbajtje
+- testim të kufizuar
 
 ---
 
-## ✅ 3. Error Handling
+### Ndryshimi (Pas)
 
-**Problemi:**
-Sistemi mund të dështojë në runtime në raste gabimesh.
+U krijua ProductService si shtresë ndërmjetëse.
 
-**Ndryshimi:**
-U implementuan try-catch blocks dhe handling më i sigurt.
+Struktura e re:
+UI → ProductService → ProductRepository → Data Storage
 
-**Përmirësimi:**
-- sistem më stabil
-- më pak crash-e
-- user experience më i mirë
+---
 
-**Pse ka rëndësi:**
-Rrit besueshmërinë e aplikacionit.
+### Përmirësimi
+
+- ndarje e qartë e përgjegjësive  
+- eliminim i varësisë direkte UI → Data  
+- rritje e modularitetit  
+
+---
+
+### Pse ka rëndësi
+
+Sistemi bëhet:
+- më i testueshëm  
+- më i mirëmbajtshëm  
+- më i zgjerueshëm  
+
+---
+
+## ✅ 2. Përmirësimi i Validimit të Inputit
+
+### Problemi (Para)
+
+Lejohej input jo valid:
+- emra bosh  
+- çmime ≤ 0  
+- pa kontroll të formatit  
+
+---
+
+### Ndryshimi (Pas)
+
+U shtua validim në Service Layer:
+
+- emri nuk mund të jetë bosh  
+- përdoret trim për input  
+- çmimi duhet të jetë > 0  
+
+Shembull:
+if (string.IsNullOrWhiteSpace(name)) throw new Exception("Name is required");
+if (price <= 0) throw new Exception("Price must be greater than 0");
+
+---
+
+### Përmirësimi
+
+- rrit integritetin e të dhënave  
+- redukton gabimet logjike  
+
+---
+
+### Pse ka rëndësi
+
+- parandalon gabime herët  
+- rrit besueshmërinë e sistemit  
+
+---
+
+## ✅ 3. Përmirësimi i Error Handling
+
+### Problemi (Para)
+
+Aplikacioni mund të crash-ojë në raste gabimesh ose ID të pavlefshme.
+
+---
+
+### Ndryshimi (Pas)
+
+U shtua:
+- try-catch  
+- kontroll për ID që nuk ekziston  
+
+Shembull:
+var product = repository.GetById(id);
+if (product == null)
+    throw new Exception("Product not found");
+
+---
+
+### Përmirësimi
+
+- më pak crash-e  
+- sjellje më stabile  
+
+---
+
+### Pse ka rëndësi
+
+- rrit stabilitetin  
+- përmirëson user experience  
+
+---
+
+## 🔧 4. Përdorimi i Interface për Repository
+
+### Problemi (Para)
+
+Service Layer varej direkt nga implementimi konkret i repository.
+
+---
+
+### Ndryshimi (Pas)
+
+U përdor interface:
+IProductRepository
+
+---
+
+### Përmirësimi
+
+- redukton coupling  
+- lejon ndryshim të storage pa ndryshuar logjikën  
+
+---
+
+### Pse ka rëndësi
+
+- përgatit sistemin për Dependency Injection  
+- e bën më fleksibël  
 
 ---
 
 ## Çka mbetet për përmirësim
 
-- unit tests më të avancuara
-- logging sistematik
-- authentication dhe authorization
-- përdorimi i database reale në vend të file storage
-- concurrency handling
+- mungojnë unit tests  
+- mungon logging  
+- përdoret file storage në vend të database  
+- mungon authentication  
+- mungon concurrency control  
+
+---
+
+## Reflektim mbi projektin
+
+Ky projekt ka ndihmuar në kuptimin e:
+- Layered Architecture  
+- Separation of Concerns  
+- Repository Pattern  
+
+Për të avancuar më tej nevojiten:
+- Dependency Injection  
+- Clean Architecture  
+- testing i avancuar  
+- logging dhe monitoring  
 
 ---
 
 ## Përfundim
 
-Përmirësimet e bëra e kanë çuar sistemin në një nivel më të strukturuar dhe profesional. Megjithatë, projekti mbetet një implementim edukativ dhe ka hapësirë për zhvillim drejt një sistemi enterprise-grade.
+Përmirësimet e realizuara e kanë bërë sistemin më të strukturuar dhe më profesional.
 
-## Reflektim mbi projektin
-
-Ky projekt ka ndihmuar në kuptimin praktik të arkitekturës së shtresuar, separation of concerns dhe repository pattern. Megjithatë, në nivel më të avancuar, sistemi do të përfitonte nga implementimi i:
-- Dependency Injection më të avancuar
-- Unit dhe integration testing më të thelluar
-- Logging dhe monitoring sistematik
-- Database relacione në vend të file storage
-
-Këto do ta çonin projektin nga nivel edukativ në nivel production-ready.
+Megjithatë, projekti mbetet edukativ dhe kërkon zgjerime për të arritur nivel production-ready.
