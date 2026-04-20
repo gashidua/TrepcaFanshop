@@ -1,108 +1,167 @@
-﻿# TrepcaFanshop
+# 🏀 TrepcaFanshopApp
 
-TrepcaFanshop është një aplikacion për menaxhimin e fanshop-it të Trepçës, i ndërtuar duke ndjekur **parime moderne të arkitekturës së softuerit**, me fokus në modularitet, mirëmbajtje dhe shkallëzim të lehtë.
+TrepcaFanshopApp është një sistem për menaxhimin e fanshop-it të klubit Trepça, i ndërtuar në C# duke përdorur ASP.NET Core Web API dhe arkitekturë të ndarë në shtresa.
+
+Sistemi mbështet menaxhimin e produkteve, shportës dhe statistikave, si dhe demonstron praktika profesionale të zhvillimit të softuerit.
 
 ---
 
 ## 📁 Struktura e Projektit
 
-- `Models/`  
-  Përmban entitetet e biznesit si `Product` dhe `Basket`.
+### ⚙️ Core Application
 
-- `Services/`  
-  Përmban logjikën e biznesit, p.sh. `Login.cs`.
-
-- `UI/`  
-  Përmban ndërfaqen me përdoruesin, si `Menu.cs`, `LoginForm`, `BasketView`.
-
-- `Data/`  
-  Përmban implementimin e **Repository Pattern**:
-  - `IRepository<T>` (kontrata)
-  - `FileRepository<T>` (implementim gjenerik)
-  - Repository specifike për entitete
-
-- `docs/`  
-  Përmban dokumentimin:
-  - UML Class Diagram
-  - Dokumentin e arkitekturës
-
-- `program.cs`  
-  Entry point i aplikacionit, me vetëm inicializim të komponentëve.
-
-- `.gitignore`  
-  Përjashton file dhe folder të panevojshëm nga repository.
+#### 📌 Controllers
+- `BasketController.cs` – menaxhimi i shportës përmes API
+- `ProductsController.cs` – CRUD operacione për produktet
+- `WeatherForecastController.cs` – test controller (template)
 
 ---
 
-## ⚙️ Teknologjitë dhe Konceptet
+#### 💾 Data Layer
+- `IRepository.cs` – interface për operacione bazike
+- `FileRepository.cs` – implementim i ruajtjes në file
+- `ProductRepository.cs` – repository specifik për produktet
+- `BasketRepository.cs` – repository për shportën
+
+---
+
+#### 📂 Data Files
+- `basket.csv` – të dhënat e shportës
+- `product.csv` – të dhënat e produkteve
+
+---
+
+#### 🧠 Models
+- `Product.cs` – entiteti i produktit
+- `Basket.cs` – përfaqëson shportën
+- `Stats.cs` – statistika të sistemit
+
+---
+
+#### ⚙️ Services
+- `ProductService.cs` – logjika e biznesit për produktet
+- `ProductServiceBase.cs` – abstraksion për product service
+- `BasketService.cs` – logjika për shportën
+- `BasketServiceBase.cs` – abstraksion për basket service
+- `BasketItem.cs` / `BasketServiceItem.cs` – struktura ndihmëse për shportën
+- `Login.cs` – logjika e autentifikimit
+
+---
+
+#### 🖥 UI Layer
+- `ConsoleMenu.cs` – ndërfaqja me përdoruesin (console)
+
+---
+
+### 📚 Documentation (docs/)
+
+- `architecture.md` – përshkrimi i arkitekturës
+- `class-diagram.md` – diagrami i klasave (tekst)
+- `class-diagram.png` – diagrami vizual
+- `implementation.md` – implementimi teknik
+- `improvement-report.md` – përmirësimet e sprintit
+- `project-audit.md` – analizë e projektit
+- `sprint-plan.md` – planifikimi i sprintit
+- `sprint-report.md` – raporti i sprintit
+
+📁 `docs/images/`
+- `get1.png`, `get2.png`, `get3.png`, `get4.png` – API screenshots
+- `post.png` – POST request demo
+- `delete.png` – DELETE request demo
+- `out.png` – output demo
+
+---
+
+### ⚙️ Konfigurim
+
+- `launchSettings.json` – konfigurimi i ASP.NET Core
+- `.editorconfig` – rregulla të kodimit
+- `.gitignore` – file që përjashtohen nga Git
+
+---
+
+## ⚙️ Teknologjitë
 
 - C#
+- ASP.NET Core Web API
 - Object-Oriented Programming (OOP)
 - Repository Pattern
-- Separation of Concerns
-- Generic Programming
-- Reflection (për CSV mapping)
+- Service Layer Architecture
+- Dependency Injection
+- File-based persistence (CSV)
+- REST API
+- Swagger (testim i endpoints)
 
 ---
 
 ## 💾 Menaxhimi i të Dhënave
 
-Projekti përdor një implementim të `FileRepository<T>` që:
+Sistemi përdor:
+- `FileRepository` për ruajtje në CSV
+- repositories specifike për entitete
 
-- Ruajnë të dhënat në **file CSV**
-- Lexojnë automatikisht të dhënat nga file
-- Krijojnë file të veçanta për çdo entitet:
-  - `Product.csv`
-  - `Basket.csv`
-
-Kjo mundëson **persistencë të të dhënave pa përdorur databazë**, duke e bërë sistemin të thjeshtë dhe të zgjerueshëm.
+📌 Të dhënat ruhen në:
+- `product.csv`
+- `basket.csv`
 
 ---
 
 ## 🧱 Arkitektura
 
-Projekti është i ndarë në shtresa:
+Sistemi është i ndarë në:
 
-- **Models** → Strukturat e të dhënave  
-- **Data** → Qasja në të dhëna (Repository Pattern)  
-- **Services** → Logjika e biznesit  
-- **UI** → Ndërfaqja me përdoruesin  
-- **Program** → Inicializimi i aplikacionit  
+1. **Controllers** → API endpoints
+2. **Services** → logjika e biznesit
+3. **Data Layer** → menaxhimi i të dhënave
+4. **Models** → struktura e entiteteve
+5. **UI / Console** → ndërfaqe testuese
 
-Kjo ndarje mundëson:
-- mirëmbajtje më të lehtë  
-- testim më të mirë  
-- zgjerim të thjeshtë në të ardhmen  
-
----
-
-## 🏗️ Aplikimi i parimeve SOLID
-
-Projekti demonstron implementim të parimeve **SOLID**:
-
-- **S – Single Responsibility Principle (SRP):** Çdo klasë ka një përgjegjësi të vetme (p.sh. `Product`, `Basket`, `Login`)  
-- **O – Open/Closed Principle (OCP):** `FileRepository<T>` mund të zgjerohen për entitete të reja pa modifikuar bazën  
-- **L – Liskov Substitution Principle (LSP):** `BasketRepository` dhe `ProductRepository` trashëgojnë `FileRepository<T>` dhe mund të zëvendësojnë bazën pa thyer logjikën  
-- **I – Interface Segregation Principle (ISP):** `IRepository<T>` ka vetëm metodat e nevojshme për CRUD  
-- **D – Dependency Inversion Principle (DIP):** `Services` varen nga interfaces (`IRepository<T>`) dhe jo nga implementime konkrete (`FileRepository`)
-
+👉 Kjo arkitekturë siguron:
+- separation of concerns
+- scalability
+- testability
+- maintainability
 
 ---
 
-## 🧪 Praktikat Profesionale
+## 🧪 Funksionalitetet Kryesore
 
-- Ndarje e qartë e shtresave (Layered Architecture)
-- Përdorimi i interface (`IRepository<T>`) për fleksibilitet
-- Program.cs minimalist (vetëm inicializim)
-- Repository Pattern për menaxhim të të dhënave
-- Strukturë e pastër dhe e organizuar e projektit
-- Dokumentim me UML dhe arkitekturë të detajuar
+- CRUD për produkte
+- Menaxhim i shportës
+- Shtim dhe fshirje i artikujve
+- Statistikë e produkteve
+- Login sistem bazik
+- API endpoints për testim (Swagger)
 
 ---
 
-## 🚀 Përfundim
+## 🧠 SOLID Principles
 
-TrepcaFanshop është ndërtuar si një projekt që demonstron:
-- dizajn të mirë të softuerit  
-- përdorim të praktikave profesionale  
-- dhe një strukturë të gatshme për zgjerim në aplikacione reale
+- **S** – çdo klasë ka përgjegjësi të vetme
+- **O** – sistemi është i zgjerueshëm
+- **L** – implementimet mund të zëvendësohen
+- **I** – interface të ndara për përgjegjësi specifike
+- **D** – dependency injection në services
+
+---
+
+## 📌 Përmirësime të Implementuara
+
+- Shtim i API Controllers
+- Refaktorim në Service Layer
+- Përmirësim i strukturës së repositories
+- Shtim i dokumentimit teknik dhe UML
+- Shtim i error handling dhe validimit
+- Organizim i plotë i sprint deliverables
+
+---
+
+## 🏁 Përfundim
+
+TrepcaFanshopApp është një sistem i kompletuar që demonstron:
+
+- arkitekturë profesionale me shtresa
+- implementim të Web API
+- përdorim të design patterns (Repository + Service)
+- dokumentim të plotë teknik
+- strukturë të gatshme për zhvillim në sistem real production
