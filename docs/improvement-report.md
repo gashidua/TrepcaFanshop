@@ -77,3 +77,13 @@ Rrit besueshmërinë e aplikacionit.
 ## Përfundim
 
 Përmirësimet e bëra e kanë çuar sistemin në një nivel më të strukturuar dhe profesional. Megjithatë, projekti mbetet një implementim edukativ dhe ka hapësirë për zhvillim drejt një sistemi enterprise-grade.
+
+## Reflektim mbi projektin
+
+Ky projekt ka ndihmuar në kuptimin praktik të arkitekturës së shtresuar, separation of concerns dhe repository pattern. Megjithatë, në nivel më të avancuar, sistemi do të përfitonte nga implementimi i:
+- Dependency Injection më të avancuar
+- Unit dhe integration testing më të thelluar
+- Logging dhe monitoring sistematik
+- Database relacione në vend të file storage
+
+Këto do ta çonin projektin nga nivel edukativ në nivel production-ready.
