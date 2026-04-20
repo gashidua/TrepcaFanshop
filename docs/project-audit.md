@@ -72,6 +72,15 @@ Testimi ekziston, por nuk mbulon plotësisht edge cases dhe integrimin midis sht
 
 ---
 
+## Sistemi aktual ka disa kufizime të rëndësishme që janë të pranueshme për nivel edukativ, por jo për production:
+
+- Përdorimi i file-based storage nuk ofron scalability dhe concurrency support.
+- Nuk ka mekanizma për transaction management ose data consistency në raste multi-user.
+- Nuk ekziston logging system për monitorim të avancuar të gabimeve dhe eventeve.
+- Arkitektura nuk implementon Clean Architecture apo Domain-Driven Design.
+
+
+
 ## 4. Përmirësimet që janë implementuar
 
 ### ✅ 1. Service Layer
