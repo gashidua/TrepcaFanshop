@@ -4,121 +4,76 @@
 
 ## Përmbledhje
 
-Gjatë këtij sprinti janë implementuar 5 përmirësime kryesore që synojnë të rrisin cilësinë, stabilitetin dhe mirëmbajtjen e sistemit.
+Gjatë këtij sprinti janë implementuar përmirësime strukturore që rrisin cilësinë, stabilitetin dhe mirëmbajtjen e sistemit.
 
-Këto ndryshime nuk janë vetëm shtesa funksionale, por përmirësime strukturore që ndikojnë drejtpërdrejt në mënyrën se si sistemi mirëmbahet dhe zgjerohet në të ardhmen.
+Këto përmirësime fokusohen në ndarjen e përgjegjësive, përmirësimin e validimit dhe rritjen e stabilitetit të aplikacionit.
 
 ---
 
-## ✅ 1. Shtimi i Service Layer
+## ✅ 1. Service Layer
 
 **Problemi:**
-UI komunikonte direkt me repository, duke krijuar varësi të forta mes shtresave.
+UI ishte i lidhur direkt me repository, duke krijuar tight coupling.
 
 **Ndryshimi:**
-U krijua `ProductService` që ndërmjetëson logjikën e biznesit.
+U krijua ProductService për të menaxhuar logjikën e biznesit.
 
 **Përmirësimi:**
-- ndarje më e mirë e përgjegjësive
-- strukturë më profesionale dhe më e pastër
-- logjika e biznesit tani është e izoluar nga UI
+- decoupling of layers
+- improves maintainability
+- supports scalability
+- clean separation of concerns
 
 **Pse ka rëndësi:**
-Kjo e bën sistemin më të lehtë për testim, mirëmbajtje dhe zgjerim në të ardhmen.
+E bën sistemin më të testueshëm, më fleksibël dhe më të lehtë për mirëmbajtje.
 
 ---
 
 ## ✅ 2. Validimi i inputit
 
 **Problemi:**
-Input invalid lejohej të kalonte në sistem.
+Input invalid mund të futet në sistem.
 
 **Ndryshimi:**
-U shtuan kontrolle për:
-- Name (nuk lejohet bosh)
-- Price (duhet të jetë > 0)
+U shtua validim për emër dhe çmim.
 
 **Përmirësimi:**
-- shmang të dhëna të pavlefshme në sistem
-- rrit integritetin e të dhënave
+- ruan integritetin e të dhënave
+- shmang gabime logjike
 
 **Pse ka rëndësi:**
-Siguron që sistemi ruan vetëm të dhëna valide dhe parandalon gabime logjike më vonë në ekzekutim.
+Siguron që sistemi pranon vetëm të dhëna valide.
 
 ---
 
 ## ✅ 3. Error Handling
 
 **Problemi:**
-Sistemi mund të crash-ojë në raste gabimesh (p.sh. file mungon ose input i gabuar).
+Sistemi mund të dështojë në runtime në raste gabimesh.
 
 **Ndryshimi:**
-- u shtuan try-catch blocks
-- u shtua fallback logic për raste të papritura
+U implementuan try-catch blocks dhe handling më i sigurt.
 
 **Përmirësimi:**
 - sistem më stabil
-- më pak ndërprerje gjatë ekzekutimit
-- mesazhe më të qarta për përdoruesin
+- më pak crash-e
+- user experience më i mirë
 
 **Pse ka rëndësi:**
-Rrit besueshmërinë e aplikacionit dhe e bën atë më të përdorshëm në situata reale.
+Rrit besueshmërinë e aplikacionit.
 
 ---
 
-## ✅ 4. Kontroll i ID-ve
+## Çka mbetet për përmirësim
 
-**Problemi:**
-Update/Delete mund të kryhej për ID që nuk ekziston.
-
-**Ndryshimi:**
-U shtua kontroll para çdo operacioni mbi ID.
-
-**Përmirësimi:**
-- shmang exceptions të panevojshme
-- feedback më i mirë për user-in
-- logjikë më e sigurt
-
-**Pse ka rëndësi:**
-Parandalon gabime logjike dhe përmirëson eksperiencën e përdoruesit.
-
----
-
-## ✅ 5. Përmirësim i dokumentimit
-
-**Problemi:**
-Dokumentimi ishte i kufizuar dhe nuk shpjegonte qartë strukturën e projektit.
-
-**Ndryshimi:**
-- u shtua README më i plotë
-- u shpjegua struktura e projektit
-
-**Përmirësimi:**
-- projekt më i kuptueshëm
-- më profesional për zhvillues të tjerë
-- më i lehtë për onboarding
-
-**Pse ka rëndësi:**
-Dokumentimi është pjesë kritike e çdo projekti profesional, sidomos kur punohet në ekip.
-
----
-
-## Çka mbetet ende e dobët
-
-- ❌ Nuk ka unit tests për logjikën e biznesit
-- ❌ UI është ende shumë bazik dhe i kufizuar
-- ❌ Nuk përdoret database reale (vetëm file storage)
-- ❌ Nuk ka authentication ose role management
-- ❌ Nuk ka logging sistematik për evente dhe gabime
+- unit tests më të avancuara
+- logging sistematik
+- authentication dhe authorization
+- përdorimi i database reale në vend të file storage
+- concurrency handling
 
 ---
 
 ## Përfundim
 
-Përmirësimet e implementuara kanë ndikuar drejtpërdrejt në:
-
-- rritjen e stabilitetit të sistemit
-- përmirësimin e arkitekturës dhe ndarjes së shtresave
-- rritjen e cilësisë së të dhënave dhe validimit
-
-Megjithatë, për ta çuar projektin në nivel profesional (production-ready), nevojiten përmirësime shtesë si testimi automatik, përdorimi i databazave reale dhe implementimi i një sistemi më të avancuar të arkitekturës.
+Përmirësimet e bëra e kanë çuar sistemin në një nivel më të strukturuar dhe profesional. Megjithatë, projekti mbetet një implementim edukativ dhe ka hapësirë për zhvillim drejt një sistemi enterprise-grade.
