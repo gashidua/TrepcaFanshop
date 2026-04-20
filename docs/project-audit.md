@@ -4,197 +4,159 @@
 
 ## 1. Përshkrimi i shkurtër i projektit
 
-TrepcaFanshopApp është një aplikacion për menaxhimin e produkteve të një fanshop-i sportiv. Sistemi është ndërtuar në mënyrë të thjeshtë duke përdorur arkitekturë bazike me ndarje në shtresa si Models, Data dhe UI (Console).
+TrepcaFanshopApp është një aplikacion për menaxhimin e produkteve të një fanshop-i sportiv. Sistemi është ndërtuar duke përdorur arkitekturë të shtresuar (Layered Architecture) me ndarje në Models, Data (Repository), Services dhe UI.
 
-Qëllimi kryesor i sistemit është të mundësojë administrimin e produkteve në mënyrë të thjeshtë dhe efikase.
+Qëllimi kryesor i sistemit është të mundësojë administrimin e produkteve në mënyrë të thjeshtë, të organizuar dhe të zgjerueshme.
 
-Ky projekt përfaqëson një implementim fillestar të një sistemi menaxhimi, i fokusuar më shumë në funksionalitet sesa në arkitekturë të avancuar. Megjithatë, ai shërben si bazë e mirë për të kuptuar konceptet e ndarjes së shtresave dhe menaxhimit të të dhënave.
+Ky projekt përfaqëson një implementim edukativ të një sistemi menaxhimi, i fokusuar në kuptimin e koncepteve bazike të arkitekturës së softuerit dhe ndarjes së përgjegjësive.
 
 ### Funksionalitetet kryesore:
-
 - Shtimi i produkteve të reja
 - Shfaqja e listës së produkteve
 - Përditësimi i produkteve ekzistuese
 - Fshirja e produkteve
-- Ruajtja e të dhënave në file (JSON)
+- Ruajtja e të dhënave në file (CSV/JSON format)
 
 ### Përdoruesit kryesorë:
-
-- **Admin i fanshop-it** – personi që menaxhon produktet
-- **Përdorues fundor (opsional)** – që vetëm i shikon produktet
+- Admin i fanshop-it
+- Përdorues për testim/lexim të produkteve
 
 ### Arkitektura aktuale:
-
-- **Models** → përfaqëson entitetet (Product)
-- **Data (Repository)** → menaxhon leximin/shkrimin në file
-- **UI (ConsoleMenu)** → ndërfaqja me përdoruesin
+- Models → entitetet (Product, Basket, etj.)
+- Data (Repository) → menaxhimi i ruajtjes së të dhënave
+- Services → logjika e biznesit
+- UI → ndërfaqja me përdoruesin
+- Program → inicializimi i sistemit
 
 ---
 
 ## 2. Çka funksionon mirë
 
-1. ✔️ Implementimi i CRUD operacioneve është funksional dhe i testueshëm  
-2. ✔️ Kodi është i ndarë në disa shtresa bazike (Models, Data, UI)  
-3. ✔️ Struktura është e kuptueshme për projekte të vogla  
-4. ✔️ Përdorimi i JSON si storage është i thjeshtë dhe praktik  
-5. ✔️ Aplikacioni mund të ekzekutohet pa konfigurime të komplikuara  
+1. ✔️ CRUD operacionet funksionojnë në mënyrë stabile
+2. ✔️ Arkitekturë e ndarë në shtresa (Separation of Concerns)
+3. ✔️ Përdorimi i Repository Pattern për abstraksion të të dhënave
+4. ✔️ Aplikacioni është i thjeshtë për ekzekutim dhe testim
+5. ✔️ Logjikë bazike e biznesit e implementuar në Services
 
 ---
 
 ## 3. Dobësitë e projektit
 
-Pas analizës së projektit, janë identifikuar këto dobësi reale:
-
-### 🔴 1. Mungon Service Layer
-UI komunikon direkt me repository → kjo krijon coupling të lartë dhe e vështirëson mirëmbajtjen.
-
-Kjo e bën sistemin të vështirë për testim dhe e lidh fort UI me logjikën e biznesit, duke ulur fleksibilitetin.
+### 🔴 1. Mungon centralized logging
+Nuk ka sistem për regjistrimin e eventeve dhe gabimeve, gjë që e vështirëson debugging në sisteme më të mëdha.
 
 ---
 
-### 🔴 2. Validimi i inputit është i pamjaftueshëm
-- Emri mund të jetë bosh  
-- Çmimi mund të jetë negativ ose jo valid  
-- Nuk ka kontroll për input jo-numerik  
+### 🔴 2. File-based storage jo e shkallëzuar
+Përdorimi i file-ve për ruajtje është i thjeshtë, por nuk është i përshtatshëm për sisteme me shumë përdorues ose concurrency.
 
 ---
 
-### 🔴 3. Error handling i dobët
-- Nëse file mungon → aplikacioni mund të crash  
-- Nuk trajtohen exception-et në mënyrë të kontrolluar  
-
-Kjo rrit rrezikun e runtime exceptions dhe e bën eksperiencën e përdoruesit jo të besueshme.
+### 🔴 3. Mungesë e concurrency control
+Nuk ka mekanizma për menaxhimin e qasjes së njëkohshme në të dhëna.
 
 ---
 
-### 🔴 4. Kontroll i dobët i ID-ve
-- Mund të kërkohet update/delete për ID që nuk ekziston  
-- Nuk ka feedback të qartë për user-in  
+### 🔴 4. Validimi i inputit është bazik
+Edhe pse ekziston validim, nuk mbulon të gjitha edge cases (p.sh. formatet e avancuara, sanitizim i inputit).
 
 ---
 
-### 🔴 5. Kod i duplikuar
-- Disa pjesë të logjikës përsëriten në UI dhe repository  
+### 🔴 5. Mungon advanced security layer
+Nuk ka authentication, authorization apo role-based access control.
 
 ---
 
-### 🔴 6. Emërtimet nuk janë konsistente
-- Disa metoda nuk janë self-explanatory  
-- Nuk ndjekin gjithmonë standarde të qarta  
+### 🔴 6. Nuk ka unit tests të mjaftueshme
+Testimi ekziston, por nuk mbulon plotësisht edge cases dhe integrimin midis shtresave.
 
 ---
 
-### 🔴 7. Dokumentimi është minimal
-- README mungon ose është i dobët  
-- Nuk ka shpjegim për setup dhe strukturën  
+## 4. Përmirësimet që janë implementuar
+
+### ✅ 1. Service Layer
+
+**Problemi:**
+UI ishte i lidhur direkt me repository.
+
+**Zgjidhja:**
+U krijua Service Layer për të menaxhuar logjikën e biznesit.
+
+**Pse ka rëndësi:**
+- decoupling of layers
+- improves maintainability
+- supports scalability
+- reduces tight coupling between UI and data layer
 
 ---
 
-### 🔴 8. Nuk ka ndarje të qartë të përgjegjësive
-- UI merr shumë përgjegjësi që duhet t’i ketë Service layer  
+### ✅ 2. Validimi i inputit
+
+**Problemi:**
+Input invalid lejohej në sistem.
+
+**Zgjidhja:**
+U shtua validim për emrin dhe çmimin.
+
+**Pse ka rëndësi:**
+- siguron integritet të të dhënave
+- parandalon gabime logjike në sistem
 
 ---
 
-### 🔴 9. Nuk ka teste
-- Nuk ka unit tests për logjikën  
+### ✅ 3. Error Handling
 
-Pa teste, është e vështirë të verifikohet korrektësia e sistemit dhe çdo ndryshim mund të sjellë bugs të reja.
+**Problemi:**
+Sistemi mund të crash-ojë në raste gabimesh.
 
----
+**Zgjidhja:**
+U implementua try-catch dhe handling më i sigurt i gabimeve.
 
-### 🔴 10. Storage me file nuk është robust
-- Nuk ka locking  
-- Nuk ka validim të strukturës së JSON  
-
----
-
-## 4. 5 përmirësime që do t’i implementoj
+**Pse ka rëndësi:**
+- rrit stabilitetin e sistemit
+- përmirëson user experience
 
 ---
 
-### ✅ Përmirësimi 1 — Krijimi i Service Layer
+### ✅ 4. Kontroll i ID-ve
 
-**Problemi:**  
-UI komunikon direkt me repository → strukturë jo e pastër  
+**Problemi:**
+Operacione mbi ID jo-ekzistuese.
 
-**Zgjidhja:**  
-Krijimi i `ProductService` që menaxhon logjikën  
+**Zgjidhja:**
+Kontroll para update/delete.
 
-**Pse ka rëndësi:**  
-- Ndarje e përgjegjësive  
-- Lehtësi në mirëmbajtje dhe zgjerim  
-- Ky ndryshim gjithashtu mundëson testim më të lehtë të logjikës pa varësi nga UI  
-
----
-
-### ✅ Përmirësimi 2 — Validimi i inputit
-
-**Problemi:**  
-Lejohet input invalid  
-
-**Zgjidhja:**  
-Validim në Service layer:
-- Name jo bosh  
-- Price > 0  
-
-**Pse ka rëndësi:**  
-- Siguron integritet të të dhënave  
-- Parandalon futjen e të dhënave të pavlefshme që mund të shkaktojnë probleme në funksionimin e sistemit  
+**Pse ka rëndësi:**
+- shmang runtime errors
+- përmirëson logjikën e aplikacionit
 
 ---
 
-### ✅ Përmirësimi 3 — Error Handling i avancuar
+### ✅ 5. Përmirësim i dokumentimit
 
-**Problemi:**  
-Crash në rast gabimesh  
+**Problemi:**
+Dokumentimi ishte bazik.
 
-**Zgjidhja:**  
-- try-catch  
-- fallback logic  
-- mesazhe për user-in  
+**Zgjidhja:**
+U shtua README dhe dokumentim më i qartë i strukturës.
 
-**Pse ka rëndësi:**  
-- Rrit stabilitetin e aplikacionit  
-- E bën aplikacionin më robust dhe më rezistent ndaj situatave të papritura gjatë ekzekutimit  
-
----
-
-### ✅ Përmirësimi 4 — Kontroll i ID-ve
-
-**Problemi:**  
-Operacione mbi ID jo-ekzistuese  
-
-**Zgjidhja:**  
-Kontroll para update/delete  
-
-**Pse ka rëndësi:**  
-- Parandalon bugs logjike  
-- Përmirëson user experience  
-
----
-
-### ✅ Përmirësimi 5 — Përmirësim i dokumentimit
-
-**Problemi:**  
-Mungon dokumentim i qartë  
-
-**Zgjidhja:**  
-- README i plotë  
-- shpjegim i arkitekturës  
-
-**Pse ka rëndësi:**  
-- E bën projektin më të kuptueshëm për të tjerët  
-- Dokumentimi i mirë është thelbësor për bashkëpunim në ekipe dhe për përdorimin e projektit nga zhvillues të tjerë  
+**Pse ka rëndësi:**
+- e bën projektin më të kuptueshëm
+- ndihmon zhvillues të tjerë
 
 ---
 
 ## 5. Një pjesë që ende nuk e kuptoj plotësisht
 
-Një aspekt që ende nuk e kuptoj plotësisht është implementimi i arkitekturave më të avancuara si Clean Architecture dhe përdorimi i Dependency Injection në projekte më të mëdha.
+Një pjesë që ende dua ta kuptoj më mirë është implementimi i arkitekturave më të avancuara si Clean Architecture dhe përdorimi i Dependency Injection në nivel më profesional.
 
-Dua të kuptoj më mirë:
-- si lidhen shtresat në mënyrë profesionale  
-- si menaxhohen dependency-t  
-- si bëhet testimi i izoluar i komponentëve  
+Në veçanti:
+- si menaxhohen dependencies në projekte të mëdha
+- si bëhet izolimi i plotë i shtresave
+- si realizohet testimi i avancuar me mocking
 
-Kjo është një fushë që dua ta përmirësoj më tej, pasi është thelbësore për zhvillimin e aplikacioneve profesionale dhe scalable.
+---
+
+## Përfundim
+
+Sistemi aktual është i përshtatshëm për një aplikacion edukativ dhe demonstron mirë konceptet bazike të arkitekturës së softuerit. Megjithatë, për përdorim në nivel enterprise, nevojiten përmirësime në skalabilitet, logging dhe siguri.
