@@ -181,7 +181,10 @@ Për të avancuar më tej nevojiten:
 - Dependency Injection  
 - Clean Architecture  
 - testing i avancuar  
-- logging dhe monitoring  
+- logging dhe monitoring
+
+- Gjatë këtij projekti kam kuptuar rëndësinë e ndarjes së logjikës së biznesit nga UI dhe si kjo ndikon në testueshmëri dhe mirëmbajtje.
+Gjithashtu kam parë praktikisht pse error handling dhe validimi janë kritike për stabilitetin e një sistemi.
 
 ---
 
