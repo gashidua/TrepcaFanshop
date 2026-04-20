@@ -159,7 +159,6 @@ IProductRepository
 - e bën më fleksibël  
 
 ---
-
 ## Çka mbetet për përmirësim
 
 - mungojnë unit tests  
@@ -193,3 +192,5 @@ Gjithashtu kam parë praktikisht pse error handling dhe validimi janë kritike p
 Përmirësimet e realizuara e kanë bërë sistemin më të strukturuar dhe më profesional.
 
 Megjithatë, projekti mbetet edukativ dhe kërkon zgjerime për të arritur nivel production-ready.
+
+Këto përmirësime janë bërë me fokus në stabilitet, mirëmbajtje dhe parandalim të gabimeve në nivel sistemi, jo vetëm në nivel UI.
