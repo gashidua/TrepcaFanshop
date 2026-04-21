@@ -89,10 +89,16 @@ if (price <= 0)
 
 ---
 
-### Përfundim
+## Përfundim
 
 Përmirësimet e realizuara e kanë bërë sistemin më të strukturuar, më të qëndrueshëm dhe më të mirëmbajtshëm.
 
-Megjithatë, për të arritur nivel production-ready, nevojiten përmirësime të mëtejshme si database, logging, security dhe testing.
+Ndryshimet e bëra nuk janë vetëm kozmetike, por ndikojnë direkt në mënyrën se si sistemi funksionon dhe si mirëmbahet në të ardhmen. Duke shtuar Service Layer, validim më të fortë dhe error handling më të kujdesshëm, sistemi tani ka një bazë më të fortë arkitekturore.
 
-Ky sprint ka qenë një hap i rëndësishëm drejt ndërtimit të një sistemi më profesional.
+Megjithatë, projekti mbetet në nivel edukativ dhe për të arritur një nivel production-ready nevojiten përmirësime të mëtejshme si:
+- implementimi i një database real  
+- shtimi i mekanizmave të sigurisë (authentication & authorization)  
+- përdorimi i logging system  
+- shtimi i unit dhe integration tests  
+
+Në përgjithësi, ky sprint ka qenë një hap i rëndësishëm drejt përmirësimit të cilësisë së projektit dhe zhvillimit të aftësive në ndërtimin e sistemeve të strukturuara dhe të qëndrueshme.
