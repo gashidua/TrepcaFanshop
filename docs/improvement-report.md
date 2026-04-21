@@ -87,6 +87,7 @@ if (string.IsNullOrWhiteSpace(name))
 if (price <= 0)
     throw new Exception("Price must be greater than 0");
 
+---
 
 ### Përfundim
 
