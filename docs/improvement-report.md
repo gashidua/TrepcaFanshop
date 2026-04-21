@@ -86,3 +86,12 @@ if (string.IsNullOrWhiteSpace(name))
 
 if (price <= 0)
     throw new Exception("Price must be greater than 0");
+
+
+### Përfundim
+
+Përmirësimet e realizuara e kanë bërë sistemin më të strukturuar, më të qëndrueshëm dhe më të mirëmbajtshëm.
+
+Megjithatë, për të arritur nivel production-ready, nevojiten përmirësime të mëtejshme si database, logging, security dhe testing.
+
+Ky sprint ka qenë një hap i rëndësishëm drejt ndërtimit të një sistemi më profesional.
