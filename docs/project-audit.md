@@ -32,126 +32,104 @@ Ky projekt përfaqëson një implementim edukativ të një sistemi menaxhimi, i 
 
 ## 2. Çka funksionon mirë
 
-1. ✔️ CRUD operacionet funksionojnë në mënyrë stabile
-2. ✔️ Arkitekturë e ndarë në shtresa (Separation of Concerns)
-3. ✔️ Përdorimi i Repository Pattern për abstraksion të të dhënave
-4. ✔️ Aplikacioni është i thjeshtë për ekzekutim dhe testim
-5. ✔️ Logjikë bazike e biznesit e implementuar në Services
+1. ✔️ CRUD operacionet funksionojnë në mënyrë stabile  
+2. ✔️ Arkitekturë e ndarë në shtresa (Separation of Concerns)  
+3. ✔️ Përdorimi i Repository Pattern për abstraksion të të dhënave  
+4. ✔️ Aplikacioni është i thjeshtë për ekzekutim dhe testim  
+5. ✔️ Logjikë bazike e biznesit e implementuar në Services  
 
 ---
 
 ## 3. Dobësitë e projektit
 
-### 🔴 1. Mungon centralized logging
+### 🔴 1. Mungon centralized logging  
 Nuk ka sistem për regjistrimin e eventeve dhe gabimeve, gjë që e vështirëson debugging në sisteme më të mëdha.
 
 ---
 
-### 🔴 2. File-based storage jo e shkallëzuar
+### 🔴 2. File-based storage jo e shkallëzuar  
 Përdorimi i file-ve për ruajtje është i thjeshtë, por nuk është i përshtatshëm për sisteme me shumë përdorues ose concurrency.
 
 ---
 
-### 🔴 3. Mungesë e concurrency control
+### 🔴 3. Mungesë e concurrency control  
 Nuk ka mekanizma për menaxhimin e qasjes së njëkohshme në të dhëna.
 
 ---
 
-### 🔴 4. Validimi i inputit është bazik
-Edhe pse ekziston validim, nuk mbulon të gjitha edge cases (p.sh. formatet e avancuara, sanitizim i inputit).
+### 🔴 4. Validimi i inputit është bazik  
+Edhe pse ekziston validim, nuk mbulon të gjitha edge cases (p.sh. sanitizim i plotë i inputit).
 
 ---
 
-### 🔴 5. Mungon advanced security layer
+### 🔴 5. Mungon advanced security layer  
 Nuk ka authentication, authorization apo role-based access control.
 
 ---
 
-### 🔴 6. Nuk ka unit tests të mjaftueshme
+### 🔴 6. Nuk ka unit tests të mjaftueshme  
 Testimi ekziston, por nuk mbulon plotësisht edge cases dhe integrimin midis shtresave.
 
 ---
 
-## Sistemi aktual ka disa kufizime të rëndësishme që janë të pranueshme për nivel edukativ, por jo për production:
-
-- Përdorimi i file-based storage nuk ofron scalability dhe concurrency support.
-- Nuk ka mekanizma për transaction management ose data consistency në raste multi-user.
-- Nuk ekziston logging system për monitorim të avancuar të gabimeve dhe eventeve.
-- Arkitektura nuk implementon Clean Architecture apo Domain-Driven Design.
-
-
-
-## 4. Përmirësimet që janë implementuar
-
-### ✅ 1. Service Layer
-
-**Problemi:**
-UI ishte i lidhur direkt me repository.
-
-**Zgjidhja:**
-U krijua Service Layer për të menaxhuar logjikën e biznesit.
-
-**Pse ka rëndësi:**
-- decoupling of layers
-- improves maintainability
-- supports scalability
-- reduces tight coupling between UI and data layer
+### 🔴 7. Përdorimi i Exception të përgjithshëm  
+Përdoret `Exception` në vend të custom exceptions, që e bën error handling më pak të kontrollueshëm.
 
 ---
 
-### ✅ 2. Validimi i inputit
+## Përmbledhje e kufizimeve
 
-**Problemi:**
-Input invalid lejohej në sistem.
+Sistemi aktual ka disa kufizime të rëndësishme që janë të pranueshme për nivel edukativ, por jo për production:
 
-**Zgjidhja:**
-U shtua validim për emrin dhe çmimin.
-
-**Pse ka rëndësi:**
-- siguron integritet të të dhënave
-- parandalon gabime logjike në sistem
+- Përdorimi i file-based storage nuk ofron scalability dhe concurrency support  
+- Nuk ka mekanizma për transaction management ose data consistency në raste multi-user  
+- Nuk ekziston logging system për monitorim të avancuar  
+- Arkitektura nuk implementon Clean Architecture apo Domain-Driven Design  
 
 ---
 
-### ✅ 3. Error Handling
+## 4. Përmirësimet që do t’i implementoj
 
-**Problemi:**
-Sistemi mund të crash-ojë në raste gabimesh.
+### ✅ 1. Shtimi i Service Layer
 
-**Zgjidhja:**
-U implementua try-catch dhe handling më i sigurt i gabimeve.
+**Problemi:**  
+UI ishte i lidhur direkt me repository (tight coupling).
 
-**Pse ka rëndësi:**
-- rrit stabilitetin e sistemit
-- përmirëson user experience
+**Zgjidhja:**  
+Krijimi i një Service Layer ndërmjet UI dhe Repository.
 
----
-
-### ✅ 4. Kontroll i ID-ve
-
-**Problemi:**
-Operacione mbi ID jo-ekzistuese.
-
-**Zgjidhja:**
-Kontroll para update/delete.
-
-**Pse ka rëndësi:**
-- shmang runtime errors
-- përmirëson logjikën e aplikacionit
+**Pse ka rëndësi:**  
+- ndarje e përgjegjësive  
+- rrit maintainability  
+- lehtëson testimin dhe zgjerimin  
 
 ---
 
-### ✅ 5. Përmirësim i dokumentimit
+### ✅ 2. Përmirësimi i validimit të inputit
 
-**Problemi:**
-Dokumentimi ishte bazik.
+**Problemi:**  
+Sistemi lejonte input jo valid (emra bosh, çmime ≤ 0).
 
-**Zgjidhja:**
-U shtua README dhe dokumentim më i qartë i strukturës.
+**Zgjidhja:**  
+Shtimi i validimit në Service Layer (kontroll për null, trim, vlera valide).
 
-**Pse ka rëndësi:**
-- e bën projektin më të kuptueshëm
-- ndihmon zhvillues të tjerë
+**Pse ka rëndësi:**  
+- ruan integritetin e të dhënave  
+- parandalon bugs logjike  
+
+---
+
+### ✅ 3. Përmirësimi i error handling
+
+**Problemi:**  
+Sistemi mund të crash-ojë në raste gabimesh ose ID të pavlefshme.
+
+**Zgjidhja:**  
+Implementim i try-catch dhe kontroll për ekzistencën e të dhënave.
+
+**Pse ka rëndësi:**  
+- rrit stabilitetin e sistemit  
+- përmirëson user experience  
 
 ---
 
@@ -160,12 +138,19 @@ U shtua README dhe dokumentim më i qartë i strukturës.
 Një pjesë që ende dua ta kuptoj më mirë është implementimi i arkitekturave më të avancuara si Clean Architecture dhe përdorimi i Dependency Injection në nivel më profesional.
 
 Në veçanti:
-- si menaxhohen dependencies në projekte të mëdha
-- si bëhet izolimi i plotë i shtresave
-- si realizohet testimi i avancuar me mocking
+- si menaxhohen dependencies në projekte të mëdha  
+- si bëhet izolimi i plotë i shtresave  
+- si realizohet testimi i avancuar me mocking  
 
 ---
 
 ## Përfundim
 
-Sistemi aktual është i përshtatshëm për një aplikacion edukativ dhe demonstron mirë konceptet bazike të arkitekturës së softuerit. Megjithatë, për përdorim në nivel enterprise, nevojiten përmirësime në skalabilitet, logging dhe siguri.
+Sistemi aktual është i përshtatshëm për një aplikacion edukativ dhe demonstron mirë konceptet bazike të arkitekturës së softuerit.
+
+Megjithatë, për përdorim në nivel production kërkohen përmirësime në:
+- scalability  
+- logging  
+- security  
+
+---
