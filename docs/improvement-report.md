@@ -1,3 +1,6 @@
+# Improvement Report — TrepcaFanshopApp
+
+---
 ## ✅ 1. Introduktimi i Service Layer
 
 ### Problemi (Para)
