@@ -9,7 +9,6 @@ namespace TrepcaFanshopApp.Services
     public class ProductService
     {
         private readonly IRepository<Product> _repo;
-        private FileRepository<Product> repo;
 
         public ProductService(IRepository<Product> repo)
         {
@@ -18,7 +17,7 @@ namespace TrepcaFanshopApp.Services
 
         public ProductService(FileRepository<Product> repo)
         {
-            this.repo = repo;
+            _repo = repo;
         }
 
         public List<Product> GetAll() => _repo.GetAll();
