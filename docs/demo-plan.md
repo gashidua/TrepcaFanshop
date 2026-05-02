@@ -89,3 +89,26 @@ Nese aplikacioni nuk hapet live ose Swagger nuk funksionon ne momentin e prezant
 - shembuj te output-it nga endpoints per te treguar cfare do te ktheje API.
 
 Keshtu prezantimi mund te vazhdoje edhe nese ka problem teknik gjate demos live.
+
+## 9. Checklist sipas kritereve te vleresimit
+
+**Project prepared well for demo (40 pike)**
+
+- Repo eshte i perditesuar ne GitHub.
+- README shpjegon si hapet projekti dhe cilin flow duhet testuar.
+- Flow-i kryesor eshte konkret: menaxhimi i produkteve dhe shportes permes Swagger/API.
+- Projekti eshte testuar me `dotnet test` dhe testet kryesore kalojne.
+
+**docs/demo-plan.md clarity and concreteness (30 pike)**
+
+- Plani lidhet direkt me projektin real TrepcaFanshopApp.
+- Permenden endpoints konkrete si `GET /api/product`, `POST /api/product`, `PUT /api/product/{id}` dhe `GET /api/basket/total`.
+- Shpjegohet pse u zgjodh ky flow dhe cfare vlere tregon ne demo.
+- Permendet nje problem real teknik dhe zgjidhja ne `FileRepository<T>`.
+
+**Demo readiness, plan B, and organization (30 pike)**
+
+- Prezantimi eshte ndare ne hyrje, demo live, shpjegim teknik, problem/zgjidhje dhe mbyllje.
+- Ka plan B me screenshots, README, dokumentim dhe shembuj output-i.
+- Demo eshte e organizuar qe te zgjase 5-7 minuta.
+- Pikat e dobeta dhe permiresimet e ardhshme jane te shenuara qarte.
