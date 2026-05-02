@@ -6,6 +6,63 @@ Sistemi mbështet menaxhimin e produkteve, shportës dhe statistikave, si dhe de
 
 ---
 
+## Quick Start
+
+Per ta hapur projektin lokalisht:
+
+```bash
+dotnet restore
+dotnet build
+dotnet run
+```
+
+Pas startimit, API mund te testohet ne Swagger:
+
+```text
+https://localhost:<port>/swagger
+```
+
+Porti varet nga konfigurimi lokal ne `Properties/launchSettings.json`.
+
+---
+
+## Demo Flow
+
+Flow-i kryesor per prezantim live eshte:
+
+```text
+Swagger -> Products API -> Create Product -> Get Products -> Search/Filter -> Update Product -> Basket Total
+```
+
+Endpoint-et kryesore qe mund te demonstrohen jane:
+
+- `GET /api/product`
+- `POST /api/product`
+- `GET /api/product/search`
+- `GET /api/product/filter`
+- `PUT /api/product/{id}`
+- `GET /api/basket/total`
+
+Plani i plote i demos gjendet ne:
+
+```text
+docs/demo-plan.md
+```
+
+---
+
+## Demo Readiness
+
+Projekti eshte pergatitur per demo me:
+
+- README te perditesuar;
+- `docs/demo-plan.md`;
+- flow kryesor funksional permes Swagger;
+- testim te logjikes kryesore me `dotnet test`;
+- plan B me screenshots, README dhe dokumentim nese demo live ka problem teknik.
+
+---
+
 ## 📁 Struktura e Projektit
 
 ### ⚙️ Core Application
