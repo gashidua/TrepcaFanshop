@@ -120,10 +120,10 @@ export function App() {
     <main className="app-shell">
       <section className="hero">
         <div>
-          <p className="eyebrow">Official store dashboard</p>
-          <h1>Trepca Fanshop</h1>
+          <p className="eyebrow">KB Trepca basketball club</p>
+          <h1>KB Trepca Fanshop</h1>
           <p className="hero-copy">
-            Manage products, stock, and supporter baskets from one full stack React and PostgreSQL app.
+            A matchday shop for Trepca supporters, built for jerseys, hoodies, accessories, and basketball gear.
           </p>
         </div>
         <div className="hero-stats" aria-label="Store statistics">
@@ -229,9 +229,7 @@ export function App() {
                     <div>
                       <span className="category-pill">{product.category}</span>
                       <h3>{product.name}</h3>
-                      <p>
-                        {product.type || "Standard"} · {product.size || "One size"} · {product.stock} in stock
-                      </p>
+                      <p>{product.type || "Standard"} / {product.size || "One size"} / {product.stock} in stock</p>
                     </div>
                     <div className="product-footer">
                       <strong>{formatCurrency(product.price)}</strong>
@@ -255,9 +253,9 @@ export function App() {
         </section>
 
         <aside className="panel cart-panel">
-          <h2>Basket</h2>
+          <h2>Matchday basket</h2>
           <div className="cart-list">
-            {cart.items.length === 0 && <p className="muted">No products in basket.</p>}
+            {cart.items.length === 0 && <p className="muted">No products in the matchday basket.</p>}
             {cart.items.map((item) => (
               <div className="cart-item" key={item.id}>
                 <div>
@@ -297,4 +295,4 @@ function formatCurrency(value) {
 }
 
 const fallbackImage =
-  "https://images.unsplash.com/photo-1511556532299-8f662fc26c06?auto=format&fit=crop&w=900&q=80";
+  "https://images.unsplash.com/photo-1519861531473-9200262188bf?auto=format&fit=crop&w=900&q=80";

@@ -1,12 +1,12 @@
-# Trepca Fanshop
+# KB Trepca Fanshop
 
-Trepca Fanshop is now structured as a full stack application:
+KB Trepca Fanshop is now structured as a full stack application for the basketball club's supporter shop:
 
 - `backend/` - Node.js, Express, PostgreSQL/Neon API
 - `frontend/` - React + Vite user interface
 - existing C#/.NET files - kept as the original project/reference implementation
 
-The new full stack version supports products, stock management, search/filter, cart items, totals, and PostgreSQL persistence.
+The new full stack version supports basketball merchandise, product and stock management, search/filter, cart items, totals, and PostgreSQL persistence.
 
 ## Tech Stack
 
@@ -121,3 +121,5 @@ Health check:
 ## Notes
 
 The old ASP.NET Core Swagger project is still in the repository, but the full stack app is the Node/React/PostgreSQL version inside `backend/` and `frontend/`.
+
+The branding is aligned with KB Trepca as a basketball club from Mitrovica and its official website: `https://kbtrepca.com/`.
