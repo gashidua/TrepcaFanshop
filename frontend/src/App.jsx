@@ -18,7 +18,7 @@ export function App() {
     return user ? { user: JSON.parse(user) } : null;
   });
   const [authMode, setAuthMode] = useState("login");
-  const [authForm, setAuthForm] = useState({ name: "", email: "user@trepca.com", password: "user123" });
+  const [authForm, setAuthForm] = useState({ name: "", email: "", password: "" });
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState({ items: [], total: 0 });
   const [orders, setOrders] = useState([]);
@@ -174,11 +174,16 @@ export function App() {
         </section>
 
         <section className="login-card">
+          <div className="login-card-header">
+            <span>{authMode === "login" ? "Welcome back" : "Create account"}</span>
+            <h2>{authMode === "login" ? "Sign in to continue" : "Join the fanshop"}</h2>
+          </div>
+
           <div className="auth-tabs">
-            <button className={authMode === "login" ? "active" : ""} onClick={() => setAuthMode("login")}>
+            <button type="button" className={authMode === "login" ? "active" : ""} onClick={() => setAuthMode("login")}>
               Login
             </button>
-            <button className={authMode === "register" ? "active" : ""} onClick={() => setAuthMode("register")}>
+            <button type="button" className={authMode === "register" ? "active" : ""} onClick={() => setAuthMode("register")}>
               Register
             </button>
           </div>
@@ -200,6 +205,7 @@ export function App() {
               Email
               <input
                 type="email"
+                placeholder="you@example.com"
                 value={authForm.email}
                 onChange={(event) => setAuthForm((current) => ({ ...current, email: event.target.value }))}
                 required
@@ -209,6 +215,7 @@ export function App() {
               Password
               <input
                 type="password"
+                placeholder="Enter your password"
                 value={authForm.password}
                 onChange={(event) => setAuthForm((current) => ({ ...current, password: event.target.value }))}
                 required
@@ -217,20 +224,7 @@ export function App() {
             <button type="submit">{authMode === "login" ? "Login" : "Create account"}</button>
           </form>
 
-          <div className="demo-logins">
-            <button
-              className="secondary"
-              onClick={() => setAuthForm({ name: "", email: "admin@trepca.com", password: "admin123" })}
-            >
-              Use admin demo
-            </button>
-            <button
-              className="secondary"
-              onClick={() => setAuthForm({ name: "", email: "user@trepca.com", password: "user123" })}
-            >
-              Use user demo
-            </button>
-          </div>
+          <p className="login-note">Admin and user demo credentials are listed in the project README.</p>
         </section>
       </main>
     );
