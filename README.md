@@ -6,7 +6,7 @@ KB Trepca Fanshop is now structured as a full stack application for the basketba
 - `frontend/` - React + Vite user interface
 - existing C#/.NET files - kept as the original project/reference implementation
 
-The new full stack version supports basketball merchandise, product and stock management, search/filter, cart items, totals, and PostgreSQL persistence.
+The new full stack version supports login, role-based access, basketball merchandise, tickets, product and stock management, cart checkout, orders, and PostgreSQL persistence.
 
 ## Tech Stack
 
@@ -75,6 +75,12 @@ Initialize database tables and seed products:
 npm run db:init
 ```
 
+If you already initialized an older database version, reset it to create users, orders, and the new cart structure:
+
+```bash
+npm run db:reset
+```
+
 Run backend and frontend together:
 
 ```bash
@@ -95,6 +101,12 @@ Default URLs:
 
 ## API Endpoints
 
+Auth:
+
+- `POST /api/auth/login`
+- `POST /api/auth/register`
+- `GET /api/auth/me`
+
 Products:
 
 - `GET /api/products`
@@ -114,9 +126,28 @@ Cart:
 - `PUT /api/cart/:id`
 - `DELETE /api/cart/:id`
 
+Orders:
+
+- `GET /api/orders`
+- `POST /api/orders`
+- `PUT /api/orders/:id/status`
+
 Health check:
 
 - `GET /api/health`
+
+## Demo Logins
+
+After running `npm run db:init` or `npm run db:reset`, you can use:
+
+```text
+Admin: admin@trepca.com / admin123
+User: user@trepca.com / user123
+```
+
+Admin can add, edit, and delete products, see stock stats, and manage all orders.
+
+User can browse tickets, jerseys, merchandise, add items to basket, place orders, and see personal orders.
 
 ## Notes
 

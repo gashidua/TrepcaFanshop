@@ -14,3 +14,18 @@ export const cartItemSchema = z.object({
   productId: z.coerce.number().int().positive(),
   quantity: z.coerce.number().int().positive()
 });
+
+export const loginSchema = z.object({
+  email: z.string().trim().email(),
+  password: z.string().min(4)
+});
+
+export const registerSchema = z.object({
+  name: z.string().trim().min(2),
+  email: z.string().trim().email(),
+  password: z.string().min(6)
+});
+
+export const orderStatusSchema = z.object({
+  status: z.enum(["pending", "confirmed", "completed", "cancelled"])
+});
