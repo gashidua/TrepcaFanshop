@@ -6,7 +6,8 @@
     "dev": "concurrently \"npm run dev --workspace backend\" \"npm run dev --workspace frontend\"",
     "dev:backend": "npm run dev --workspace backend",
     "dev:frontend": "npm run dev --workspace frontend",
-    "db:init": "npm run db:init --workspace backend"
+    "db:init": "npm run db:init --workspace backend",
+    "db:reset": "npm run db:reset --workspace backend"
   },
   "workspaces": [
     "backend",
