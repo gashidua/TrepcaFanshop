@@ -1,23 +1,34 @@
 # KB Trepca Fanshop
 
-KB Trepca Fanshop is now structured as a full stack application for the basketball club's supporter shop:
+KB Trepca Fanshop është aplikacion full stack për menaxhimin e fan-shopit dhe biletave të klubit KB Trepça. Projekti përfshin një frontend modern në React/Vite, një API në Node.js/Express me PostgreSQL, si dhe versionin fillestar C#/.NET të ruajtur si referencë.
 
-- `backend/` - Node.js, Express, PostgreSQL/Neon API
-- `frontend/` - React + Vite user interface
-- existing C#/.NET files - kept as the original project/reference implementation
+## Funksionalitetet
 
-The new full stack version supports login, role-based access, basketball merchandise, tickets, product and stock management, cart checkout, orders, and PostgreSQL persistence.
+- autentikim për admin dhe user
+- katalog produktesh me foto, kategori, çmime dhe stok
+- produkte pa stok shfaqen te useri si `Nuk ka në stok`, pa ekspozuar numrin e stokut
+- fanella me variante sipas numrit dhe lojtarit
+- shportë, checkout dhe porosi
+- biletat për ndeshje, bileta sezonale dhe vjetore
+- QR kode për biletat e gjeneruara
+- njoftime për porosi, blerje biletash dhe skanime QR me datë dhe orë
+- badge i notifications pastrohet pasi useri i hap njoftimet
+- panel admin për produkte, stok, ndeshje, bileta dhe porosi
+- ndeshjet renditen automatikisht sipas datës dhe orës
 
 ## Tech Stack
 
+- React 19
+- Vite
+- CSS custom responsive UI
 - Node.js
 - Express
-- PostgreSQL locally or Neon in the cloud
-- React
-- Vite
-- CSS responsive layout
+- PostgreSQL / Neon
+- JWT authentication
+- Zod validation
+- C#/.NET reference project
 
-## Project Structure
+## Struktura
 
 ```text
 backend/
@@ -26,78 +37,91 @@ backend/
   src/server.js
   src/validation.js
   src/scripts/initDb.js
+  src/scripts/resetDb.js
 
 frontend/
   index.html
+  public/
   src/App.jsx
   src/api.js
   src/main.jsx
   src/styles.css
+
+docs/
+  architecture.md
+  implementation.md
+  sprint-plan.md
+  sprint-report.md
 ```
 
 ## Setup
 
-Install dependencies from the repository root:
+Instalo dependencies nga root i projektit:
 
 ```bash
 npm install
 ```
 
-Create backend environment file:
+Krijo env file për backend:
 
 ```bash
 copy backend\.env.example backend\.env
 ```
 
-Set `DATABASE_URL` in `backend/.env`.
+Vendos `DATABASE_URL` në `backend/.env`.
 
-Local PostgreSQL example:
+Shembull lokal:
 
 ```text
 DATABASE_URL=postgres://postgres:postgres@localhost:5432/trepca_fanshop
 ```
 
-Neon example:
+Shembull Neon:
 
 ```text
 DATABASE_URL=postgresql://USER:PASSWORD@HOST/DBNAME?sslmode=require
 ```
 
-Create frontend environment file:
-
-```bash
-copy frontend\.env.example frontend\.env
-```
-
-Initialize database tables and seed products:
+Inicializo databazën:
 
 ```bash
 npm run db:init
 ```
 
-If you already initialized an older database version, reset it to create users, orders, and the new cart structure:
+Nëse duhet ta rifillosh databazën nga e para:
 
 ```bash
 npm run db:reset
 ```
 
-Run backend and frontend together:
+Nise backend-in dhe frontend-in bashkë:
 
 ```bash
 npm run dev
 ```
 
-Or run them separately:
+Ose ndaras:
 
 ```bash
 npm run dev:backend
 npm run dev:frontend
 ```
 
-Default URLs:
+URL-të default:
 
 - Frontend: `http://localhost:5173`
 - Backend API: `http://localhost:4000/api`
+
+## Demo Logins
+
+Pas inicializimit të databazës:
+
+```text
+Admin: admin@trepca.com / admin123
+User: user@trepca.com / user123
+```
+
+Në versionin frontend/localStorage përdoren po të njëjtat llogari demo.
 
 ## API Endpoints
 
@@ -110,9 +134,6 @@ Auth:
 Products:
 
 - `GET /api/products`
-- `GET /api/products?search=jersey`
-- `GET /api/products?category=Jerseys`
-- `GET /api/products?minPrice=20`
 - `GET /api/products/stats`
 - `GET /api/products/:id`
 - `POST /api/products`
@@ -132,25 +153,12 @@ Orders:
 - `POST /api/orders`
 - `PUT /api/orders/:id/status`
 
-Health check:
+Health:
 
 - `GET /api/health`
 
-## Demo Logins
+## Shënime
 
-After running `npm run db:init` or `npm run db:reset`, you can use:
+Frontend-i ruan disa rrjedha demo në `localStorage`, që e bën të lehtë testimin e shpejtë në browser. Backend-i është gati për ruajtje reale me PostgreSQL/Neon.
 
-```text
-Admin: admin@trepca.com / admin123
-User: user@trepca.com / user123
-```
-
-Admin can add, edit, and delete products, see stock stats, and manage all orders.
-
-User can browse tickets, jerseys, merchandise, add items to basket, place orders, and see personal orders.
-
-## Notes
-
-The old ASP.NET Core Swagger project is still in the repository, but the full stack app is the Node/React/PostgreSQL version inside `backend/` and `frontend/`.
-
-The branding is aligned with KB Trepca as a basketball club from Mitrovica and its official website: `https://kbtrepca.com/`.
+Branding-u është ndërtuar rreth KB Trepça, fan-shopit, ndeshjeve dhe eksperiencës së tifozëve në Minatori.

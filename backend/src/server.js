@@ -99,6 +99,12 @@ app.post("/api/auth/login", async (req, res, next) => {
 app.post("/api/auth/register", async (req, res, next) => {
   try {
     const payload = registerSchema.parse(req.body);
+    const existingUser = await query("SELECT id FROM users WHERE email = $1", [payload.email]);
+
+    if (existingUser.rowCount) {
+      return res.status(409).json({ message: "Ekziston një llogari me këtë email." });
+    }
+
     const passwordHash = await bcrypt.hash(payload.password, 10);
     const result = await query(
       `INSERT INTO users (name, email, password_hash, role)
@@ -107,9 +113,9 @@ app.post("/api/auth/register", async (req, res, next) => {
       [payload.name, payload.email, passwordHash]
     );
     const user = result.rows[0];
-    return res.status(201).json({ token: signToken(user), user });
+    return res.status(201).json({ message: "Llogaria u krijua. Tani kyçu me emailin dhe passwordin që krijove.", user });
   } catch (error) {
-    if (error?.code === "23505") return res.status(409).json({ message: "Email already exists" });
+    if (error?.code === "23505") return res.status(409).json({ message: "Ekziston një llogari me këtë email." });
     return next(error);
   }
 });
