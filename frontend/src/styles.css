@@ -1978,6 +1978,7 @@ label {
 
 .admin-page-header {
   margin-bottom: 20px;
+  padding-left: clamp(16px, 2vw, 28px);
 }
 
 .admin-page-header h1 {
@@ -2427,7 +2428,23 @@ button.danger-button {
 }
 
 .admin-stock-row--ticket {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+}
+
+.admin-stock-row--ticket-edit {
   grid-template-columns: minmax(0, 1fr) minmax(120px, 160px);
+}
+
+.admin-stock-info {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+}
+
+.admin-stock-info span {
+  color: #9eb0a4;
+  font-size: 0.9rem;
 }
 
 .admin-stock-row.is-low {

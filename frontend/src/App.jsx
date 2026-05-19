@@ -1334,7 +1334,7 @@ function AdminPanel({
     ["admin-stock", "Stoku", Warehouse],
     ["admin-products", "Produktet", Package],
     ["admin-matches", "Ndeshjet", CalendarDays],
-    ["admin-ticket-types", "Llojet e biletave", Ticket],
+    ["admin-ticket-types", "Biletat", Ticket],
     ["admin-orders", "Porositë", ShoppingBag]
   ];
 
@@ -1657,7 +1657,7 @@ function AdminPanel({
                     + Produkt
                   </button>
                   <button type="button" className="ghost-button" onClick={() => onNavigate("admin-ticket-types")}>
-                    Llojet e biletave
+                    Biletat
                   </button>
                 </div>
               </article>
@@ -1679,7 +1679,7 @@ function AdminPanel({
                     className={`admin-stock-row ${product.stock < LOW_STOCK_THRESHOLD ? "is-low" : ""}`}
                   >
                     <img src={product.imageUrl} alt={product.name} />
-                    <div>
+                    <div className="admin-stock-info">
                       <strong>{product.name}</strong>
                       <span>{product.category}</span>
                     </div>
@@ -1718,48 +1718,41 @@ function AdminPanel({
                       key={match.id}
                       className={`admin-stock-row admin-stock-row--ticket ${match.ticketStock <= 0 ? "is-low" : ""}`}
                     >
-                      <div>
+                      <div className="admin-stock-info">
                         <strong>{match.home} vs {match.away}</strong>
                         <span>{getMatchDisplayDate(match)} · {match.time}</span>
                       </div>
-                      <label className="admin-stock-edit">
-                        <span>Bileta</span>
-                        <input
-                          type="number"
-                          min="0"
-                          value={match.ticketStock}
-                          onChange={(event) => updateMatchTicketStock(match.id, event.target.value)}
-                        />
-                      </label>
+                      <div className="admin-stock-qty">
+                        <span className={match.ticketStock <= 0 ? "stock-low" : "stock-ok"}>{match.ticketStock}</span>
+                        <small>bileta</small>
+                      </div>
+                      <button type="button" className="ghost-button" onClick={() => onNavigate("admin-ticket-types")}>
+                        Ndrysho
+                      </button>
                     </div>
                   ))}
                 </div>
               </div>
 
               <div className="admin-ticket-stock-section">
-                <h3>Biletat sezonale dhe llojet tjera</h3>
+                <h3>Biletat sezonale dhe vjetore</h3>
                 <div className="admin-stock-table">
                   {ticketTypeList.filter((type) => type.id !== "single").map((type) => (
                     <div
                       key={type.id}
                       className={`admin-stock-row admin-stock-row--ticket ${type.stock <= 0 ? "is-low" : ""}`}
                     >
-                      <div>
+                      <div className="admin-stock-info">
                         <strong>{type.name}</strong>
-                        <span>
-                          {formatCurrency(type.price)}
-                          {type.id !== "single" ? ` · ${type.stock} bileta` : ""}
-                        </span>
+                        <span>{formatCurrency(type.price)}</span>
                       </div>
-                      <label className="admin-stock-edit">
-                        <span>Bileta</span>
-                        <input
-                          type="number"
-                          min="0"
-                          value={type.stock}
-                          onChange={(event) => updateTicketTypeStock(type.id, event.target.value)}
-                        />
-                      </label>
+                      <div className="admin-stock-qty">
+                        <span className={type.stock <= 0 ? "stock-low" : "stock-ok"}>{type.stock}</span>
+                        <small>bileta</small>
+                      </div>
+                      <button type="button" className="ghost-button" onClick={() => onNavigate("admin-ticket-types")}>
+                        Ndrysho
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -1884,7 +1877,7 @@ function AdminPanel({
         {activeView === "admin-ticket-types" && (
           <section className="admin-page">
             <article className="admin-card">
-              <h2>Llojet e biletave</h2>
+              <h2>Biletat</h2>
                 <form className="admin-form admin-form--inline-submit" onSubmit={addTicketType}>
                   <label>Emri<input value={ticketForm.name} onChange={(e) => setTicketForm((c) => ({ ...c, name: e.target.value }))} required /></label>
                   <label>Çmimi<input type="number" min="0" value={ticketForm.price} onChange={(e) => setTicketForm((c) => ({ ...c, price: e.target.value }))} required /></label>
@@ -1911,6 +1904,53 @@ function AdminPanel({
                     </div>
                   ))}
                 </div>
+            </article>
+            <article className="admin-card">
+              <h2>Stoku i biletave</h2>
+              <div className="admin-ticket-stock-section">
+                <h3>Bileta për një ndeshje</h3>
+                <div className="admin-stock-table">
+                  {matchList.map((match) => (
+                    <div className="admin-stock-row admin-stock-row--ticket-edit" key={match.id}>
+                      <div className="admin-stock-info">
+                        <strong>{match.home} vs {match.away}</strong>
+                        <span>{getMatchDisplayDate(match)} · {match.time}</span>
+                      </div>
+                      <label className="admin-stock-edit">
+                        <span>Bileta</span>
+                        <input
+                          type="number"
+                          min="0"
+                          value={match.ticketStock}
+                          onChange={(event) => updateMatchTicketStock(match.id, event.target.value)}
+                        />
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="admin-ticket-stock-section">
+                <h3>Biletat sezonale dhe vjetore</h3>
+                <div className="admin-stock-table">
+                  {ticketTypeList.filter((type) => type.id !== "single").map((type) => (
+                    <div className="admin-stock-row admin-stock-row--ticket-edit" key={type.id}>
+                      <div className="admin-stock-info">
+                        <strong>{type.name}</strong>
+                        <span>{formatCurrency(type.price)}</span>
+                      </div>
+                      <label className="admin-stock-edit">
+                        <span>Bileta</span>
+                        <input
+                          type="number"
+                          min="0"
+                          value={type.stock}
+                          onChange={(event) => updateTicketTypeStock(type.id, event.target.value)}
+                        />
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </article>
           </section>
         )}
