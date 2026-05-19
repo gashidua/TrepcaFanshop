@@ -2307,6 +2307,15 @@ button.danger-button {
   line-height: 1.45;
 }
 
+.admin-alert-list {
+  color: #f0c4c4;
+  display: grid;
+  gap: 5px;
+  list-style: disc;
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
 .stock-low,
 .stock-row-low strong {
   color: #ff8a8a;

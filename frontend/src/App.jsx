@@ -24,6 +24,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 const LOW_STOCK_THRESHOLD = 20;
+const JERSEY_LOW_STOCK_THRESHOLD = 4;
 
 const MATCH_TIME_OPTIONS = [
   "17:00",
@@ -419,6 +420,48 @@ function getLowStockProducts(catalog) {
   return catalog.filter((product) => product.stock < LOW_STOCK_THRESHOLD);
 }
 
+function getLowJerseyVariants(catalog) {
+  const jersey = catalog.find(isJersey);
+  if (!jersey) return [];
+  return getJerseyVariants(jersey)
+    .filter((variant) => variant.stock < JERSEY_LOW_STOCK_THRESHOLD)
+    .map((variant) => ({
+      ...variant,
+      productName: jersey.name,
+      message:
+        variant.stock <= 0
+          ? `Fanella numri ${variant.number} - ${variant.name} është jashtë stokut.`
+          : `Fanella numri ${variant.number} - ${variant.name} ka vetëm ${variant.stock} copë.`
+    }));
+}
+
+function getCartStockIssue(cartItems, catalog) {
+  for (const item of cartItems) {
+    if (item.itemType === "ticket") continue;
+    const live = catalog.find((product) => product.id === item.product?.id) || item.product;
+    if (!live) return "Produkti nuk u gjet në katalog.";
+
+    if (isJersey(live)) {
+      const variant = findJerseyVariant(live, item.jerseyPlayer);
+      if (!variant || variant.stock <= 0) {
+        return `${item.jerseyPlayer || live.name} nuk është në stok.`;
+      }
+      if (item.quantity > variant.stock) {
+        return `${jerseyVariantLabel(variant)} nuk ka sasi të mjaftueshme në stok.`;
+      }
+      continue;
+    }
+
+    if (isProductOutOfStock(live)) {
+      return `${live.name} nuk është në stok.`;
+    }
+    if (item.quantity > live.stock) {
+      return `${live.name} nuk ka sasi të mjaftueshme në stok.`;
+    }
+  }
+  return "";
+}
+
 function readMatches() {
   return sortMatchesByDate(readJsonStorage(matchesStorageKey, defaultMatches).map(enrichMatch));
 }
@@ -462,7 +505,9 @@ function readAllOrders() {
       // skip invalid account blobs
     }
   }
-  return orders.sort((a, b) => String(b.purchasedAt || "").localeCompare(String(a.purchasedAt || "")));
+  return orders.sort((a, b) =>
+    String(b.purchasedAt || b.createdAt || "").localeCompare(String(a.purchasedAt || a.createdAt || ""))
+  );
 }
 
 ensureAdminAccount();
@@ -693,11 +738,11 @@ export function App() {
 
     if (isJersey(live) && !defaultVariant) {
       setCartMessage(`${live.name} nuk është në stok për asnjë numër.`);
-      return;
+      return false;
     }
     if (!isJersey(live) && isProductOutOfStock(live)) {
       setCartMessage(`${live.name} nuk është në stok.`);
-      return;
+      return false;
     }
 
     const existing = cart.find((item) => item.itemType !== "ticket" && item.product.id === live.id);
@@ -715,7 +760,7 @@ export function App() {
             ? `${jerseyVariantLabel(activeVariant)} nuk ka sasi të mjaftueshme në stok.`
             : `${live.name} nuk ka sasi të mjaftueshme në stok.`
         );
-        return;
+        return false;
       }
     }
 
@@ -740,6 +785,7 @@ export function App() {
       ];
     });
     setCartMessage(`${live.name} u shtua në shportë.`);
+    return true;
   }
 
   function addTicketToCart(ticket) {
@@ -793,6 +839,14 @@ export function App() {
   }
 
   function finishProductOrder(card, customer) {
+    const stockIssue = getCartStockIssue(cart, catalog);
+    if (stockIssue) {
+      setCartMessage(stockIssue);
+      setPaymentModal(null);
+      setActiveView("cart");
+      return;
+    }
+
     const createdAt = new Date().toISOString();
     const order = {
       id: Date.now(),
@@ -947,7 +1001,15 @@ export function App() {
             }}
           />
         )}
-        {activeView === "product" && <ProductDetail product={selectedProduct} cartMessage={cartMessage} onClearCartMessage={() => setCartMessage("")} onAddToCart={addToCart} onNavigate={setActiveView} />}
+        {activeView === "product" && (
+          <ProductDetail
+            product={catalog.find((product) => product.id === selectedProduct?.id) || selectedProduct}
+            cartMessage={cartMessage}
+            onClearCartMessage={() => setCartMessage("")}
+            onAddToCart={addToCart}
+            onNavigate={setActiveView}
+          />
+        )}
         {activeView === "cart" && (
           <CartView
             cart={cart}
@@ -1133,6 +1195,7 @@ function AdminPanel({
   const [deleteProduct, setDeleteProduct] = useState(null);
 
   const lowStockProducts = useMemo(() => getLowStockProducts(catalog), [catalog]);
+  const lowJerseyVariants = useMemo(() => getLowJerseyVariants(catalog), [catalog]);
   const upcomingMatches = useMemo(() => sortMatchesByDate(matchList).slice(0, 4), [matchList]);
   const recentOrders = useMemo(() => orders.slice(0, 5), [orders]);
 
@@ -1356,16 +1419,16 @@ function AdminPanel({
 
         {activeView === "admin-dashboard" && (
           <section className="admin-page admin-dashboard-v2">
-            {lowStockProducts.length > 0 && (
+            {lowJerseyVariants.length > 0 && (
               <div className="admin-stock-alert" role="alert">
                 <AlertTriangle size={22} />
                 <div>
-                  <strong>Stok i ulët — porosit tani nga furnitori</strong>
-                  <span>
-                    {lowStockProducts.length}{" "}
-                    {lowStockProducts.length === 1 ? "produkt ka" : "produkte kanë"} më pak se {LOW_STOCK_THRESHOLD} copë:{" "}
-                    {lowStockProducts.map((p) => `${p.name} (${p.stock})`).join(", ")}
-                  </span>
+                  <strong>Fanellat që duhen furnizuar</strong>
+                  <ul className="admin-alert-list">
+                    {lowJerseyVariants.map((variant) => (
+                      <li key={variant.id}>{variant.message}</li>
+                    ))}
+                  </ul>
                 </div>
                 <button type="button" className="ghost-button" onClick={() => onNavigate("admin-stock")}>
                   Shiko stokun
@@ -1425,18 +1488,18 @@ function AdminPanel({
 
               <article className="admin-card admin-dash-panel admin-dash-stock-panel">
                 <h2><Warehouse size={20} /> Stoku</h2>
-                {lowStockProducts.length === 0 ? (
-                  <p className="muted">Të gjitha produktet kanë ≥ {LOW_STOCK_THRESHOLD} copë.</p>
+                {lowJerseyVariants.length === 0 ? (
+                  <p className="muted">Fanellat janë në nivel të mirë furnizimi.</p>
                 ) : (
                   <>
                     <p className="admin-dash-warning">
-                      <AlertTriangle size={18} /> Porosit nga furnitori:
+                      <AlertTriangle size={18} /> Kontrollo fanellat:
                     </p>
                     <ul className="admin-dash-list">
-                      {lowStockProducts.map((product) => (
-                        <li key={product.id} className="stock-row-low">
-                          <span>{product.name}</span>
-                          <strong>{product.stock} copë</strong>
+                      {lowJerseyVariants.map((variant) => (
+                        <li key={variant.id} className="stock-row-low">
+                          <span>#{variant.number} - {variant.name}</span>
+                          <strong>{variant.stock <= 0 ? "Jashtë stokut" : `${variant.stock} copë`}</strong>
                         </li>
                       ))}
                     </ul>
@@ -1663,7 +1726,11 @@ function AdminPanel({
                   <article className="admin-order-row" key={`${order.customerEmail}-${order.id}`}>
                     <div>
                       <strong>{order.customerEmail}</strong>
-                      <span>{order.purchasedAt ? new Date(order.purchasedAt).toLocaleString("sq-AL") : "—"}</span>
+                      <span>
+                        {order.purchasedAt || order.createdAt
+                          ? formatDateTimeLabel(order.purchasedAt || order.createdAt)
+                          : "—"}
+                      </span>
                     </div>
                     <p>{order.items?.map((item) => item.name || item.product?.name).filter(Boolean).join(", ") || "Porosi"}</p>
                     <strong>{formatCurrency(order.total || 0)}</strong>
@@ -1957,7 +2024,7 @@ function ProductCard({ product, onSelect, onAdd }) {
       <div>
         <span>{product.category}</span>
         <h3>{product.name}</h3>
-        <p>{outOfStock ? "Nuk ka në stok" : isClothing(product) ? "Madhësia zgjedhet në My Cart" : "One size"}</p>
+        {outOfStock && <p>Nuk ka në stok</p>}
         <div className="product-footer">
           <strong>{formatCurrency(product.price)}</strong>
           <button title={outOfStock ? "Nuk ka në stok" : "Add to cart"} onClick={onAdd} disabled={outOfStock}><Plus size={17} /></button>
@@ -1980,7 +2047,15 @@ function ProductDetail({ product, cartMessage, onClearCartMessage, onAddToCart, 
         <strong className="price">{formatCurrency(product.price)}</strong>
         <p>{outOfStock ? "Nuk ka në stok." : isClothing(product) ? "Produkt zyrtar i KB Trepça. Madhësia zgjedhet në My Cart para pagesës." : "Aksesor zyrtar i KB Trepça për ditë ndeshjeje dhe përkrahje të klubit."}</p>
         <button onClick={() => onAddToCart(product)} disabled={outOfStock}><ShoppingBag size={18} /> Add to Cart</button>
-        <button className="ghost-button" disabled={outOfStock} onClick={() => { onAddToCart(product); onNavigate("cart"); }}>Buy Now</button>
+        <button
+          className="ghost-button"
+          disabled={outOfStock}
+          onClick={() => {
+            if (onAddToCart(product)) onNavigate("cart");
+          }}
+        >
+          Buy Now
+        </button>
       </div>
     </section>
   );
@@ -2041,7 +2116,7 @@ function CartView({ cart, catalog, total, onUpdateItem, onRemoveItem, onBuyNow }
                                   disabled={variant.stock <= 0}
                                 >
                                   {jerseyVariantLabel(variant)}
-                                  {variant.stock <= 0 ? " (pa stok)" : " (në stok)"}
+                                  {variant.stock <= 0 ? " (pa stok)" : ""}
                                 </option>
                               ))}
                             </select>
