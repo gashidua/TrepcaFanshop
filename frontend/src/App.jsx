@@ -601,9 +601,10 @@ export function App() {
     setCatalog(enriched);
   }
 
-  function decrementCatalogStock(cartItems) {
+  function decrementCatalogStock(cartItems, baseCatalog = null) {
     setCatalog((current) => {
-      const next = current.map((product) => {
+      const source = baseCatalog || current;
+      const next = source.map((product) => {
         const related = cartItems.filter((item) => item.itemType !== "ticket" && item.product?.id === product.id);
         if (!related.length) return product;
 
@@ -656,6 +657,19 @@ export function App() {
     if (!user) return;
     writeAccountData(user.email, { cart, orders, notifications, tickets, scans });
   }, [user, cart, orders, notifications, tickets, scans]);
+
+  useEffect(() => {
+    function syncSharedCatalog(event) {
+      if (event.key === catalogStorageKey) {
+        const nextCatalog = readCatalog();
+        setCatalog(nextCatalog);
+        setSelectedProduct((current) => nextCatalog.find((product) => product.id === current?.id) || current);
+      }
+    }
+
+    window.addEventListener("storage", syncSharedCatalog);
+    return () => window.removeEventListener("storage", syncSharedCatalog);
+  }, []);
 
   function submitAuth(event) {
     event.preventDefault();
@@ -733,7 +747,9 @@ export function App() {
   }
 
   function addToCart(product) {
-    const live = catalog.find((item) => item.id === product.id) || product;
+    const liveCatalog = readCatalog();
+    setCatalog(liveCatalog);
+    const live = liveCatalog.find((item) => item.id === product.id) || product;
     const defaultVariant = isJersey(live) ? firstAvailableJerseyVariant(live) : null;
 
     if (isJersey(live) && !defaultVariant) {
@@ -801,10 +817,12 @@ export function App() {
   }
 
   function updateCartItem(id, patch) {
+    const liveCatalog = readCatalog();
+    setCatalog(liveCatalog);
     setCart((current) =>
       current.map((item) => {
         if (item.id !== id) return item;
-        const live = catalog.find((product) => product.id === item.product?.id) || item.product;
+        const live = liveCatalog.find((product) => product.id === item.product?.id) || item.product;
         const quantity = patch.quantity == null ? item.quantity : Math.max(1, Number(patch.quantity));
         const jerseyPlayer = patch.jerseyPlayer == null ? item.jerseyPlayer : patch.jerseyPlayer;
 
@@ -839,7 +857,9 @@ export function App() {
   }
 
   function finishProductOrder(card, customer) {
-    const stockIssue = getCartStockIssue(cart, catalog);
+    const liveCatalog = readCatalog();
+    setCatalog(liveCatalog);
+    const stockIssue = getCartStockIssue(cart, liveCatalog);
     if (stockIssue) {
       setCartMessage(stockIssue);
       setPaymentModal(null);
@@ -867,7 +887,7 @@ export function App() {
       ...(purchasedTickets.length > 0 ? [{ id: `${order.id}-tickets`, title: "Biletat u gjeneruan", text: `${purchasedTickets.length} ${purchasedTickets.length === 1 ? "biletë u gjenerua" : "bileta u gjeneruan"} me QR kod.`, status: "completed", createdAt }] : []),
       ...current
     ]);
-    decrementCatalogStock(cart);
+    decrementCatalogStock(cart, liveCatalog);
     setCart([]);
     setPaymentModal(null);
     setActiveView(purchasedTickets.length > 0 ? "tickets" : "notifications");
@@ -1015,9 +1035,20 @@ export function App() {
             cart={cart}
             catalog={catalog}
             total={cartTotal}
+            cartMessage={cartMessage}
+            onClearCartMessage={() => setCartMessage("")}
             onUpdateItem={updateCartItem}
             onRemoveItem={removeCartItem}
-            onBuyNow={() => setPaymentModal({ type: "cart" })}
+            onBuyNow={() => {
+              const liveCatalog = readCatalog();
+              setCatalog(liveCatalog);
+              const stockIssue = getCartStockIssue(cart, liveCatalog);
+              if (stockIssue) {
+                setCartMessage(stockIssue);
+                return;
+              }
+              setPaymentModal({ type: "cart" });
+            }}
           />
         )}
         {activeView === "tickets" && (
@@ -2070,11 +2101,12 @@ function CartNotice({ message, onClose }) {
   );
 }
 
-function CartView({ cart, catalog, total, onUpdateItem, onRemoveItem, onBuyNow }) {
+function CartView({ cart, catalog, total, cartMessage, onClearCartMessage, onUpdateItem, onRemoveItem, onBuyNow }) {
   return (
     <section className="cart-page">
       <div className="cart-workspace">
         <SectionHeader title="My Cart" />
+        {cartMessage && <CartNotice message={cartMessage} onClose={onClearCartMessage} />}
         {cart.length === 0 ? <div className="empty-state">Shporta juaj është e zbrazët.</div> : (
           <div className="cart-page-list">
             {cart.map((item) => {
