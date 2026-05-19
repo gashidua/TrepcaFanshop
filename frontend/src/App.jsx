@@ -25,6 +25,7 @@ import { useEffect, useMemo, useState } from "react";
 
 const LOW_STOCK_THRESHOLD = 20;
 const JERSEY_LOW_STOCK_THRESHOLD = 4;
+const DEFAULT_TICKET_STOCK = 100;
 
 const MATCH_TIME_OPTIONS = [
   "17:00",
@@ -278,6 +279,7 @@ function enrichMatch(match) {
     ...match,
     dateIso,
     date,
+    ticketStock: Number.isFinite(Number(match.ticketStock)) ? Math.max(0, Number(match.ticketStock)) : DEFAULT_TICKET_STOCK,
     venueClub: club.shortName,
     arenaName: match.arenaName || club.arenaName,
     arenaImageUrl: match.arenaImageUrl || club.imageUrl,
@@ -325,8 +327,8 @@ const defaultMatches = [
 
 const defaultTicketTypes = [
   { id: "single", name: "Biletë për një ndeshje", price: 5 },
-  { id: "season", name: "Biletë sezonale", price: 60 },
-  { id: "year", name: "Biletë vjetore", price: 120 }
+  { id: "season", name: "Biletë sezonale", price: 60, stock: DEFAULT_TICKET_STOCK },
+  { id: "year", name: "Biletë vjetore", price: 120, stock: DEFAULT_TICKET_STOCK }
 ];
 
 const ticketPassDetails = {
@@ -462,12 +464,51 @@ function getCartStockIssue(cartItems, catalog) {
   return "";
 }
 
+function enrichTicketType(type) {
+  if (type.id === "single") return { ...type };
+  return {
+    ...type,
+    stock: Number.isFinite(Number(type.stock)) ? Math.max(0, Number(type.stock)) : DEFAULT_TICKET_STOCK
+  };
+}
+
+function getTicketStockIssue(ticket, quantity, matches, ticketTypes) {
+  const amount = Math.max(1, Number(quantity) || 1);
+
+  if (ticket.typeId === "single") {
+    const match = matches.find((item) => item.id === ticket.matchId || `${item.home} vs ${item.away}` === ticket.match);
+    if (!match) return "Ndeshja nuk u gjet.";
+    if (match.ticketStock <= 0) return `${match.home} vs ${match.away} nuk ka bileta në stok.`;
+    if (amount > match.ticketStock) return `${match.home} vs ${match.away} nuk ka sasi të mjaftueshme biletash.`;
+    return "";
+  }
+
+  const type = ticketTypes.find((item) => item.id === ticket.typeId);
+  if (!type) return "Lloji i biletës nuk u gjet.";
+  if (type.stock <= 0) return `${type.name} nuk ka bileta në stok.`;
+  if (amount > type.stock) return `${type.name} nuk ka sasi të mjaftueshme biletash.`;
+  return "";
+}
+
+function getCartInventoryIssue(cartItems, catalog, matches, ticketTypes) {
+  const productIssue = getCartStockIssue(cartItems, catalog);
+  if (productIssue) return productIssue;
+
+  for (const item of cartItems) {
+    if (item.itemType !== "ticket") continue;
+    const ticketIssue = getTicketStockIssue(item.ticket, item.quantity, matches, ticketTypes);
+    if (ticketIssue) return ticketIssue;
+  }
+
+  return "";
+}
+
 function readMatches() {
   return sortMatchesByDate(readJsonStorage(matchesStorageKey, defaultMatches).map(enrichMatch));
 }
 
 function readTicketTypes() {
-  return readJsonStorage(ticketTypesStorageKey, defaultTicketTypes);
+  return readJsonStorage(ticketTypesStorageKey, defaultTicketTypes).map(enrichTicketType);
 }
 
 function ensureAdminAccount() {
@@ -627,6 +668,33 @@ export function App() {
     });
   }
 
+  function decrementTicketStock(cartItems, baseMatches = null, baseTicketTypes = null) {
+    const ticketItems = cartItems.filter((item) => item.itemType === "ticket");
+    if (!ticketItems.length) return;
+
+    const nextMatches = (baseMatches || readMatches()).map((match) => {
+      const sold = ticketItems
+        .filter(
+          (item) =>
+            item.ticket.typeId === "single" &&
+            (item.ticket.matchId === match.id || item.ticket.match === `${match.home} vs ${match.away}`)
+        )
+        .reduce((sum, item) => sum + item.quantity, 0);
+      return sold ? { ...match, ticketStock: Math.max(0, match.ticketStock - sold) } : match;
+    });
+
+    const nextTicketTypes = (baseTicketTypes || readTicketTypes()).map((type) => {
+      if (type.id === "single") return type;
+      const sold = ticketItems
+        .filter((item) => item.ticket.typeId === type.id)
+        .reduce((sum, item) => sum + item.quantity, 0);
+      return sold ? { ...type, stock: Math.max(0, type.stock - sold) } : type;
+    });
+
+    persistMatches(nextMatches);
+    persistTicketTypes(nextTicketTypes);
+  }
+
   function persistMatches(nextMatches) {
     const enriched = sortMatchesByDate(nextMatches.map(enrichMatch));
     writeJsonStorage(matchesStorageKey, enriched);
@@ -634,8 +702,9 @@ export function App() {
   }
 
   function persistTicketTypes(nextTypes) {
-    writeJsonStorage(ticketTypesStorageKey, nextTypes);
-    setTicketTypeList(nextTypes);
+    const enriched = nextTypes.map(enrichTicketType);
+    writeJsonStorage(ticketTypesStorageKey, enriched);
+    setTicketTypeList(enriched);
   }
 
   useEffect(() => {
@@ -665,6 +734,8 @@ export function App() {
         setCatalog(nextCatalog);
         setSelectedProduct((current) => nextCatalog.find((product) => product.id === current?.id) || current);
       }
+      if (event.key === matchesStorageKey) setMatchList(readMatches());
+      if (event.key === ticketTypesStorageKey) setTicketTypeList(readTicketTypes());
     }
 
     window.addEventListener("storage", syncSharedCatalog);
@@ -805,6 +876,17 @@ export function App() {
   }
 
   function addTicketToCart(ticket) {
+    const liveMatches = readMatches();
+    const liveTicketTypes = readTicketTypes();
+    setMatchList(liveMatches);
+    setTicketTypeList(liveTicketTypes);
+
+    const stockIssue = getTicketStockIssue(ticket, ticket.quantity, liveMatches, liveTicketTypes);
+    if (stockIssue) {
+      setCartMessage(stockIssue);
+      return { ok: false, message: stockIssue };
+    }
+
     const cartTicket = {
       id: Date.now(),
       itemType: "ticket",
@@ -814,6 +896,7 @@ export function App() {
     };
     setCart((current) => [cartTicket, ...current]);
     setCartMessage(`${ticket.match} u shtua në My Cart.`);
+    return { ok: true };
   }
 
   function updateCartItem(id, patch) {
@@ -858,8 +941,12 @@ export function App() {
 
   function finishProductOrder(card, customer) {
     const liveCatalog = readCatalog();
+    const liveMatches = readMatches();
+    const liveTicketTypes = readTicketTypes();
     setCatalog(liveCatalog);
-    const stockIssue = getCartStockIssue(cart, liveCatalog);
+    setMatchList(liveMatches);
+    setTicketTypeList(liveTicketTypes);
+    const stockIssue = getCartInventoryIssue(cart, liveCatalog, liveMatches, liveTicketTypes);
     if (stockIssue) {
       setCartMessage(stockIssue);
       setPaymentModal(null);
@@ -888,6 +975,7 @@ export function App() {
       ...current
     ]);
     decrementCatalogStock(cart, liveCatalog);
+    decrementTicketStock(cart, liveMatches, liveTicketTypes);
     setCart([]);
     setPaymentModal(null);
     setActiveView(purchasedTickets.length > 0 ? "tickets" : "notifications");
@@ -1041,8 +1129,12 @@ export function App() {
             onRemoveItem={removeCartItem}
             onBuyNow={() => {
               const liveCatalog = readCatalog();
+              const liveMatches = readMatches();
+              const liveTicketTypes = readTicketTypes();
               setCatalog(liveCatalog);
-              const stockIssue = getCartStockIssue(cart, liveCatalog);
+              setMatchList(liveMatches);
+              setTicketTypeList(liveTicketTypes);
+              const stockIssue = getCartInventoryIssue(cart, liveCatalog, liveMatches, liveTicketTypes);
               if (stockIssue) {
                 setCartMessage(stockIssue);
                 return;
@@ -1327,7 +1419,7 @@ function AdminPanel({
     event.preventDefault();
     if (!ticketForm.name.trim() || !ticketForm.price) return;
     onSaveTicketTypes([
-      { id: `t-${Date.now()}`, name: ticketForm.name.trim(), price: Number(ticketForm.price) },
+      { id: `t-${Date.now()}`, name: ticketForm.name.trim(), price: Number(ticketForm.price), stock: DEFAULT_TICKET_STOCK },
       ...ticketTypeList
     ]);
     setTicketForm({ name: "", price: "" });
@@ -1335,6 +1427,22 @@ function AdminPanel({
 
   function removeTicketType(id) {
     onSaveTicketTypes(ticketTypeList.filter((type) => type.id !== id));
+  }
+
+  function updateTicketTypeStock(id, value) {
+    onSaveTicketTypes(
+      ticketTypeList.map((type) =>
+        type.id === id ? { ...type, stock: Math.max(0, Number(value) || 0) } : type
+      )
+    );
+  }
+
+  function updateMatchTicketStock(id, value) {
+    onSaveMatches(
+      matchList.map((match) =>
+        match.id === id ? { ...match, ticketStock: Math.max(0, Number(value) || 0) } : match
+      )
+    );
   }
 
   return (
@@ -1594,6 +1702,67 @@ function AdminPanel({
                     </button>
                   </div>
                 ))}
+              </div>
+            </article>
+            <article className="admin-card">
+              <h2>Inventari i biletave</h2>
+              <p className="muted">
+                Stoku i biletave shfaqet vetëm për adminin. Çdo ndeshje ose lloj i ri bilete nis me {DEFAULT_TICKET_STOCK} bileta.
+              </p>
+
+              <div className="admin-ticket-stock-section">
+                <h3>Bileta për një ndeshje</h3>
+                <div className="admin-stock-table">
+                  {matchList.map((match) => (
+                    <div
+                      key={match.id}
+                      className={`admin-stock-row admin-stock-row--ticket ${match.ticketStock <= 0 ? "is-low" : ""}`}
+                    >
+                      <div>
+                        <strong>{match.home} vs {match.away}</strong>
+                        <span>{getMatchDisplayDate(match)} · {match.time}</span>
+                      </div>
+                      <label className="admin-stock-edit">
+                        <span>Bileta</span>
+                        <input
+                          type="number"
+                          min="0"
+                          value={match.ticketStock}
+                          onChange={(event) => updateMatchTicketStock(match.id, event.target.value)}
+                        />
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="admin-ticket-stock-section">
+                <h3>Biletat sezonale dhe llojet tjera</h3>
+                <div className="admin-stock-table">
+                  {ticketTypeList.filter((type) => type.id !== "single").map((type) => (
+                    <div
+                      key={type.id}
+                      className={`admin-stock-row admin-stock-row--ticket ${type.stock <= 0 ? "is-low" : ""}`}
+                    >
+                      <div>
+                        <strong>{type.name}</strong>
+                        <span>
+                          {formatCurrency(type.price)}
+                          {type.id !== "single" ? ` · ${type.stock} bileta` : ""}
+                        </span>
+                      </div>
+                      <label className="admin-stock-edit">
+                        <span>Bileta</span>
+                        <input
+                          type="number"
+                          min="0"
+                          value={type.stock}
+                          onChange={(event) => updateTicketTypeStock(type.id, event.target.value)}
+                        />
+                      </label>
+                    </div>
+                  ))}
+                </div>
               </div>
             </article>
           </section>
@@ -2199,9 +2368,10 @@ function TicketsView({ tickets, scans, matches, ticketTypes, onAddTicketToCart, 
     const arena = selectedMatch ? getMatchArena(selectedMatch).name : "Minatori";
     const matchTitle = selectedMatch ? `${selectedMatch.home} vs ${selectedMatch.away}` : activeType.name;
 
-    onAddTicketToCart({
+    const result = onAddTicketToCart({
       typeId: activeType.id,
       name: activeType.name,
+      matchId: selectedMatch?.id || null,
       match: matchTitle,
       quantityLabel: selectedMatch ? `${matchTitle} - ${selectedMatch.date}, ${selectedMatch.time}` : activeType.name,
       date: selectedMatch ? getMatchDisplayDate(selectedMatch) : "Sezoni 2026",
@@ -2210,7 +2380,7 @@ function TicketsView({ tickets, scans, matches, ticketTypes, onAddTicketToCart, 
       quantity,
       price: activeType.price
     });
-    setTicketMessage(`${matchTitle} u shtua në My Cart.`);
+    setTicketMessage(result?.ok === false ? result.message || "Nuk ka në stok." : `${matchTitle} u shtua në My Cart.`);
   }
 
   return (
