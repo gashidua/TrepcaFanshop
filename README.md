@@ -1,234 +1,164 @@
-# 🏀 TrepcaFanshopApp
+# KB Trepca Fanshop
 
-TrepcaFanshopApp është një sistem për menaxhimin e fanshop-it të klubit Trepça, i ndërtuar në C# duke përdorur ASP.NET Core Web API dhe arkitekturë të ndarë në shtresa.
+KB Trepca Fanshop është aplikacion full stack për menaxhimin e fan-shopit dhe biletave të klubit KB Trepça. Projekti përfshin një frontend modern në React/Vite, një API në Node.js/Express me PostgreSQL, si dhe versionin fillestar C#/.NET të ruajtur si referencë.
 
-Sistemi mbështet menaxhimin e produkteve, shportës dhe statistikave, si dhe demonstron praktika profesionale të zhvillimit të softuerit.
+## Funksionalitetet
 
----
+- autentikim për admin dhe user
+- katalog produktesh me foto, kategori, çmime dhe stok
+- produkte pa stok shfaqen te useri si `Nuk ka në stok`, pa ekspozuar numrin e stokut
+- fanella me variante sipas numrit dhe lojtarit
+- shportë, checkout dhe porosi
+- biletat për ndeshje, bileta sezonale dhe vjetore
+- QR kode për biletat e gjeneruara
+- njoftime për porosi, blerje biletash dhe skanime QR me datë dhe orë
+- badge i notifications pastrohet pasi useri i hap njoftimet
+- panel admin për produkte, stok, ndeshje, bileta dhe porosi
+- ndeshjet renditen automatikisht sipas datës dhe orës
 
-## Quick Start
+## Tech Stack
 
-Per ta hapur projektin lokalisht:
+- React 19
+- Vite
+- CSS custom responsive UI
+- Node.js
+- Express
+- PostgreSQL / Neon
+- JWT authentication
+- Zod validation
+- C#/.NET reference project
+
+## Struktura
+
+```text
+backend/
+  db/schema.sql
+  src/db.js
+  src/server.js
+  src/validation.js
+  src/scripts/initDb.js
+  src/scripts/resetDb.js
+
+frontend/
+  index.html
+  public/
+  src/App.jsx
+  src/api.js
+  src/main.jsx
+  src/styles.css
+
+docs/
+  architecture.md
+  implementation.md
+  sprint-plan.md
+  sprint-report.md
+```
+
+## Setup
+
+Instalo dependencies nga root i projektit:
 
 ```bash
-dotnet restore
-dotnet build
-dotnet run
+npm install
 ```
 
-Pas startimit, API mund te testohet ne Swagger:
+Krijo env file për backend:
+
+```bash
+copy backend\.env.example backend\.env
+```
+
+Vendos `DATABASE_URL` në `backend/.env`.
+
+Shembull lokal:
 
 ```text
-https://localhost:<port>/swagger
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/trepca_fanshop
 ```
 
-Porti varet nga konfigurimi lokal ne `Properties/launchSettings.json`.
-
----
-
-## Demo Flow
-
-Flow-i kryesor per prezantim live eshte:
+Shembull Neon:
 
 ```text
-Swagger -> Products API -> Create Product -> Get Products -> Search/Filter -> Update Product -> Basket Total
+DATABASE_URL=postgresql://USER:PASSWORD@HOST/DBNAME?sslmode=require
 ```
 
-Endpoint-et kryesore qe mund te demonstrohen jane:
+Inicializo databazën:
 
-- `GET /api/product`
-- `POST /api/product`
-- `GET /api/product/search`
-- `GET /api/product/filter`
-- `PUT /api/product/{id}`
-- `GET /api/basket/total`
+```bash
+npm run db:init
+```
 
-Plani i plote i demos gjendet ne:
+Nëse duhet ta rifillosh databazën nga e para:
+
+```bash
+npm run db:reset
+```
+
+Nise backend-in dhe frontend-in bashkë:
+
+```bash
+npm run dev
+```
+
+Ose ndaras:
+
+```bash
+npm run dev:backend
+npm run dev:frontend
+```
+
+URL-të default:
+
+- Frontend: `http://localhost:5173`
+- Backend API: `http://localhost:4000/api`
+
+## Demo Logins
+
+Pas inicializimit të databazës:
 
 ```text
-docs/demo-plan.md
+Admin: admin@trepca.com / admin123
+User: user@trepca.com / user123
 ```
 
----
+Në versionin frontend/localStorage përdoren po të njëjtat llogari demo.
 
-## Demo Readiness
+## API Endpoints
 
-Projekti eshte pergatitur per demo me:
+Auth:
 
-- README te perditesuar;
-- `docs/demo-plan.md`;
-- flow kryesor funksional permes Swagger;
-- testim te logjikes kryesore me `dotnet test`;
-- plan B me screenshots, README dhe dokumentim nese demo live ka problem teknik.
+- `POST /api/auth/login`
+- `POST /api/auth/register`
+- `GET /api/auth/me`
 
----
+Products:
 
-## 📁 Struktura e Projektit
+- `GET /api/products`
+- `GET /api/products/stats`
+- `GET /api/products/:id`
+- `POST /api/products`
+- `PUT /api/products/:id`
+- `DELETE /api/products/:id`
 
-### ⚙️ Core Application
+Cart:
 
-#### 📌 Controllers
-- `BasketController.cs` – menaxhimi i shportës përmes API
-- `ProductsController.cs` – CRUD operacione për produktet
-- `WeatherForecastController.cs` – test controller (template)
+- `GET /api/cart`
+- `POST /api/cart`
+- `PUT /api/cart/:id`
+- `DELETE /api/cart/:id`
 
----
+Orders:
 
-#### 💾 Data Layer
-- `IRepository.cs` – interface për operacione bazike
-- `FileRepository.cs` – implementim i ruajtjes në file
-- `ProductRepository.cs` – repository specifik për produktet
-- `BasketRepository.cs` – repository për shportën
+- `GET /api/orders`
+- `POST /api/orders`
+- `PUT /api/orders/:id/status`
 
----
+Health:
 
-#### 📂 Data Files
-- `basket.csv` – të dhënat e shportës
-- `product.csv` – të dhënat e produkteve
+- `GET /api/health`
 
----
+## Shënime
 
-#### 🧠 Models
-- `Product.cs` – entiteti i produktit
-- `Basket.cs` – përfaqëson shportën
-- `Stats.cs` – statistika të sistemit
+Frontend-i ruan disa rrjedha demo në `localStorage`, që e bën të lehtë testimin e shpejtë në browser. Backend-i është gati për ruajtje reale me PostgreSQL/Neon.
 
----
-
-#### ⚙️ Services
-- `ProductService.cs` – logjika e biznesit për produktet
-- `ProductServiceBase.cs` – abstraksion për product service
-- `BasketService.cs` – logjika për shportën
-- `BasketServiceBase.cs` – abstraksion për basket service
-- `BasketItem.cs` / `BasketServiceItem.cs` – struktura ndihmëse për shportën
-- `Login.cs` – logjika e autentifikimit
-
----
-
-#### 🖥 UI Layer
-- `ConsoleMenu.cs` – ndërfaqja me përdoruesin (console)
-
----
-
-### 📚 Documentation (docs/)
-
-- `architecture.md` – përshkrimi i arkitekturës
-- `class-diagram.md` – diagrami i klasave (tekst)
-- `class-diagram.png` – diagrami vizual
-- `implementation.md` – implementimi teknik
-- `improvement-report.md` – përmirësimet e sprintit
-- `project-audit.md` – analizë e projektit
-- `sprint-plan.md` – planifikimi i sprintit
-- `sprint-report.md` – raporti i sprintit
-
-📁 `docs/images/`
-- `get1.png`, `get2.png`, `get3.png`, `get4.png` – API screenshots
-- `post.png` – POST request demo
-- `delete.png` – DELETE request demo
-- `out.png` – output demo
-
----
-
-### ⚙️ Konfigurim
-
-- `launchSettings.json` – konfigurimi i ASP.NET Core
-- `.editorconfig` – rregulla të kodimit
-- `.gitignore` – file që përjashtohen nga Git
-
----
-
-## ⚙️ Teknologjitë
-
-- C#
-- ASP.NET Core Web API
-- Object-Oriented Programming (OOP)
-- Repository Pattern
-- Service Layer Architecture
-- Dependency Injection
-- File-based persistence (CSV)
-- REST API
-- Swagger (testim i endpoints)
-
----
-
-## 💾 Menaxhimi i të Dhënave
-
-Sistemi përdor:
-- `FileRepository` për ruajtje në CSV
-- repositories specifike për entitete
-
-📌 Të dhënat ruhen në:
-- `product.csv`
-- `basket.csv`
-
----
-
-## 🧱 Arkitektura
-
-Sistemi është i ndarë në:
-
-1. **Controllers** → API endpoints
-2. **Services** → logjika e biznesit
-3. **Data Layer** → menaxhimi i të dhënave
-4. **Models** → struktura e entiteteve
-5. **UI / Console** → ndërfaqe testuese
-
-👉 Kjo arkitekturë siguron:
-- separation of concerns
-- scalability
-- testability
-- maintainability
-
----
-
-## 🧪 Funksionalitetet Kryesore
-
-- CRUD për produkte
-- Menaxhim i shportës
-- Shtim dhe fshirje i artikujve
-- Statistikë e produkteve
-- Login sistem bazik
-- API endpoints për testim (Swagger)
-
----
-
-## 🧠 SOLID Principles
-
-- **S** – çdo klasë ka përgjegjësi të vetme
-- **O** – sistemi është i zgjerueshëm
-- **L** – implementimet mund të zëvendësohen
-- **I** – interface të ndara për përgjegjësi specifike
-- **D** – dependency injection në services
-
----
-
-## 📌 Përmirësime të Implementuara
-
-- Shtim i API Controllers
-- Refaktorim në Service Layer
-- Përmirësim i strukturës së repositories
-- Shtim i dokumentimit teknik dhe UML
-- Shtim i error handling dhe validimit
-- Organizim i plotë i sprint deliverables
-
----
-
-
-## Testing
-
-Testet e implementuara verifikojnë funksionalitetin bazë të CRUD operacioneve dhe logjikës së biznesit. Megjithatë, test coverage për edge cases dhe integration scenarios është ende i kufizuar dhe mund të zgjerohet në të ardhmen.
-
-
----
-
-## 🏁 Përfundim
-
-TrepcaFanshopApp është një sistem i kompletuar që demonstron:
-
-- arkitekturë profesionale me shtresa
-- implementim të Web API
-- përdorim të design patterns (Repository + Service)
-- dokumentim të plotë teknik
-- strukturë të gatshme për zhvillim në sistem real production
-
-Ky projekt është zhvilluar si një sistem edukativ për të demonstruar parimet bazë të arkitekturës së softuerit dhe nuk përfaqëson një sistem production-ready.
+Branding-u është ndërtuar rreth KB Trepça, fan-shopit, ndeshjeve dhe eksperiencës së tifozëve në Minatori.
